@@ -20,6 +20,7 @@ Custom scripts in `scripts/` are called from the status bar:
 - `cpu_usage.sh` - CPU percentage via `/proc/stat`
 - `mem_usage.sh` - Memory percentage via `/proc/meminfo`
 - `glm_usage_simple.py` - GLM API usage (reads from `~/.claude/settings.json`, caches for 60s)
+- `claude_status.sh` - Claude Code activity monitor (background process, shows ✻ in window list when Claude is active)
 
 The status bar updates every 1 second (`set -g status-interval 1`), so scripts must be fast and have caching.
 
@@ -37,6 +38,11 @@ This config is designed for vim users:
 - Splits: `s` (horizontal), `v` (vertical)
 - Copy mode: vi-style with `v` for visual selection, `y` to yank
 - Windows: `1`-`9` to select, `n`/`p` for next/prev, `,` to rename
+
+### Session Persistence (tmux-resurrect + tmux-continuum)
+- **tmux-resurrect**: Manual save/restore of sessions (including pane content, running processes)
+- **tmux-continuum**: Automatic save every 5 minutes, auto-restore on tmux start
+- All plugins are managed through TPM
 
 ## Color Scheme
 
@@ -60,6 +66,11 @@ tmux ls  # or: tl (alias)
 
 # Attach to session
 tmux attach -t <name>  # or: ta <name> (alias)
+
+# Session save/restore (tmux-resurrect)
+prefix + Ctrl-s  # Save session manually
+prefix + Ctrl-r  # Restore saved session
+# Note: tmux-continuum auto-saves every 5 minutes and auto-restores on start
 ```
 
 ## File Structure
@@ -71,6 +82,7 @@ tmux attach -t <name>  # or: ta <name> (alias)
 │   ├── cpu_usage.sh   # CPU percentage for status bar
 │   ├── mem_usage.sh   # Memory percentage for status bar
 │   ├── glm_usage_simple.py  # GLM API usage
+│   ├── claude_status.sh  # Claude Code activity monitor
 │   ├── tmux_install.sh  # Installation helper
 │   └── tmux_aliases.sh  # tu() function, tl/ta aliases
 └── plugins/
