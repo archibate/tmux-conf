@@ -36,8 +36,29 @@ while IFS= read -r line; do
     fi
 done <<< "$new_issues"
 
-# Run fresh brief to get current state
-current_report=$($BRIEF_SCRIPT 2>/dev/null)
+# Try to get stored report first (faster, more reliable)
+STATE_DIR="${TMPDIR:-/tmp}/tmux_brief"
+CURRENT_REPORT="$STATE_DIR/current_report"
+
+current_report=""
+if [[ -f "$CURRENT_REPORT" ]]; then
+    current_report=$(cat "$CURRENT_REPORT" 2>/dev/null)
+fi
+
+# If stored report is empty or only whitespace, run fresh brief
+if [[ -z "$current_report" ]] || [[ $(echo "$current_report" | wc -l) -lt 2 ]]; then
+    current_report=$($BRIEF_SCRIPT 2>/dev/null)
+fi
+
+# If still empty, show message and exit
+if [[ -z "$current_report" ]]; then
+    clear
+    echo "No report available. Brief may be running or no issues detected."
+    echo ""
+    echo "Press any key to close..."
+    read -n1 -s -t 300
+    exit 0
+fi
 
 # Parse and group by priority
 declare -a high_issues medium_issues
@@ -45,24 +66,39 @@ high_count=0
 medium_count=0
 
 while IFS= read -r line; do
-    if [[ "$line" =~ ^(🔴|🟡)\ ([^:]+:[0-9]+)\ -\ (.*)$ ]]; then
-        emoji="${BASH_REMATCH[1]}"
-        session_window="${BASH_REMATCH[2]}"
-        description="${BASH_REMATCH[3]}"
+    # Parse using simple string operations (more reliable than regex for emojis)
+    # Extract emoji
+    if [[ "$line" == 🔴* ]]; then
+        emoji="🔴"
+    elif [[ "$line" == 🟡* ]]; then
+        emoji="🟡"
+    else
+        continue
+    fi
 
-        # Check if this is a new issue
-        local new_marker=""
-        if [[ -n "${is_new[$session_window]}" ]]; then
-            new_marker="${C_YELLOW}⚡${C_RESET} "
-        fi
+    # Extract rest after emoji
+    rest="${line#* }"
 
-        if [[ "$emoji" == "🔴" ]]; then
-            high_issues+=("${C_RED}${emoji}${C_RESET} ${new_marker}${C_BRIGHT}${session_window}${C_RESET} - ${description}")
-            ((high_count++))
-        else
-            medium_issues+=("${C_YELLOW}${emoji}${C_RESET} ${new_marker}${C_BRIGHT}${session_window}${C_RESET} - ${description}")
-            ((medium_count++))
-        fi
+    # Split by " - " to get key and description
+    key="${rest%% -*}"
+    desc="${rest#* - }"
+
+    # Only process high/medium priority (ignore green/low)
+    session_window="$key"
+    description="$desc"
+
+    # Check if this is a new issue
+    new_marker=""
+    if [[ -n "${is_new[$session_window]}" ]]; then
+        new_marker="${C_YELLOW}⚡${C_RESET} "
+    fi
+
+    if [[ "$emoji" == "🔴" ]]; then
+        high_issues+=("${C_RED}${emoji}${C_RESET} ${new_marker}${C_BRIGHT}${session_window}${C_RESET} - ${description}")
+        ((high_count++))
+    else
+        medium_issues+=("${C_YELLOW}${emoji}${C_RESET} ${new_marker}${C_BRIGHT}${session_window}${C_RESET} - ${description}")
+        ((medium_count++))
     fi
 done <<< "$current_report"
 
@@ -75,60 +111,42 @@ fi
 
 # Clear screen and show popup
 clear
-cat << 'EOF'
-╔═══════════════════════════════════════════╗
-║           TMUX BRIEF REPORT              ║
-╠═══════════════════════════════════════════╣
-║                                           ║
-EOF
-
-# Helper to print a row
-print_row() {
-    local text="$1"
-    # Pad to 41 chars (inner width)
-    local padded=$(printf "%-41s" "$text")
-    echo "║ ${padded} ║"
-}
+echo ""
 
 # Print high priority section
 if [[ $high_count -gt 0 ]]; then
-    print_row "${C_RED}🔴 HIGH PRIORITY${C_RESET} ${C_GRAY}(${high_count})${C_RESET}"
-    echo "║                                           ║"
+    echo "${C_RED}🔴 HIGH PRIORITY${C_RESET} ${C_GRAY}(${high_count})${C_RESET}"
+    echo ""
     for issue in "${high_issues[@]}"; do
-        # Truncate if too long (max 39 chars to fit in box)
-        local truncated="${issue:0:39}"
-        print_row "$truncated"
+        echo "  $issue"
     done
-    echo "║                                           ║"
+    echo ""
 fi
 
 # Print medium priority section
 if [[ $medium_count -gt 0 ]]; then
-    print_row "${C_YELLOW}🟡 MEDIUM PRIORITY${C_RESET} ${C_GRAY}(${medium_count})${C_RESET}"
-    echo "║                                           ║"
+    echo "${C_YELLOW}🟡 MEDIUM PRIORITY${C_RESET} ${C_GRAY}(${medium_count})${C_RESET}"
+    echo ""
     for issue in "${medium_issues[@]}"; do
-        local truncated="${issue:0:39}"
-        print_row "$truncated"
+        echo "  $issue"
     done
-    echo "║                                           ║"
+    echo ""
 fi
 
 # All clear message
 if [[ $high_count -eq 0 && $medium_count -eq 0 ]]; then
-    print_row "${C_GREEN}✅ All clear - no issues detected${C_RESET}"
-    echo "║                                           ║"
+    echo "${C_GREEN}✅ All clear - no issues detected${C_RESET}"
+    echo ""
 fi
 
 # Footer with last check time
 if [[ -n "$last_check_time" ]]; then
-    print_row "${C_GRAY}Last check: ${last_check_time}${C_RESET}"
+    echo "${C_GRAY}Last check: ${last_check_time}${C_RESET}"
 else
-    print_row "${C_GRAY}Press any key to close...${C_RESET}"
+    echo "${C_GRAY}Press any key to close...${C_RESET}"
 fi
 
-cat << 'EOF'
-╚═══════════════════════════════════════════╝
-EOF
+echo ""
 
 # Wait for any key press (timeout after 5 minutes if no input)
 read -n1 -s -t 300
