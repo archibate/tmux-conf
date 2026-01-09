@@ -88,6 +88,43 @@ The `@claude-status` window option is set by `claude_status.sh`:
 - The monitor runs as background process via `run-shell -b` in tmux.conf
 - Checks pane content for spinner patterns: `✻.*(Contemplating|Working|Thinking|…|\.\.\.)`
 
+### Tmux Brief Monitoring System
+Automatically monitors all tmux panes for issues and notifies when NEW problems appear:
+
+**Scripts:**
+- `tmux_brief_monitor.sh` - Background monitor (runs every 2 minutes)
+- `tmux_brief_state.sh` - Tracks issue history and detects NEW issues
+- `tmux_brief_indicator.sh` - Status bar indicator (⚠ with counts)
+- `tmux_brief_popup.sh` - Popup viewer showing all issues
+
+**Keybindings:**
+- `prefix + B` - Show brief popup with all current issues
+
+**Status Bar:**
+- `·` (gray dot) - No new issues
+- `⚠1` (red) - New 🔴 high-priority issues
+- `⚠1` (yellow) - New 🟡 medium-priority issues
+
+**Tmux Options:**
+- `@brief-status` - "idle" or "alert"
+- `@brief-count-high` - Number of 🔴 issues
+- `@brief-count-medium` - Number of 🟡 issues
+- `@brief-new-issues` - List of new issues (for popup)
+
+**Manual Control:**
+```bash
+# Check monitor status
+~/.config/tmux/scripts/tmux_brief_monitor.sh --status
+
+# Stop monitor
+~/.config/tmux/scripts/tmux_brief_monitor.sh --stop
+
+# Run single check
+~/.config/tmux/scripts/tmux_brief_monitor.sh --once
+```
+
+**State Storage:** `/tmp/tmux_brief/state` - Tracks issue history for NEW detection
+
 ## Color Scheme
 
 Uses Gruvbox colors consistently:
@@ -125,7 +162,7 @@ prefix + Ctrl-r  # Restore saved session
 │   ├── glm_usage_simple.py  # GLM API usage (cached 60s)
 │   ├── claude_status.sh   # Claude Code activity monitor (background process)
 │   ├── tmux_install.sh    # Installation helper
-│   ├── tmux_aliases.sh    # tu() function, tl/ta/tc/ts aliases
+│   ├── tmux_aliases.sh    # tu() function, tl/ta/tc/tb aliases
 │   ├── tmux_window_picker.sh   # Window picker (prefix + w)
 │   ├── window_preview.sh       # Window preview content
 │   ├── tmux_session_picker.sh  # Session picker (prefix + f)
@@ -133,7 +170,11 @@ prefix + Ctrl-r  # Restore saved session
 │   ├── tmux_catalog.sh         # Catalog picker (prefix + F or tc)
 │   ├── fzf_preview.sh          # Catalog preview content
 │   ├── tmux_summarize.sh       # Full Claude analysis (ts) - all panes with attention table
-│   └── tmux_brief.sh           # Quick attention-only (tb) - 🔴🟡🟢 emoji priorities
+│   ├── tmux_brief.sh           # Quick attention-only (tb) - 🔴🟡🟢 emoji priorities
+│   ├── tmux_brief_monitor.sh   # Background monitor - checks every 2 min for new issues
+│   ├── tmux_brief_state.sh     # State management - tracks issue history
+│   ├── tmux_brief_indicator.sh # Status bar indicator - shows alert when new issues
+│   └── tmux_brief_popup.sh     # Popup viewer (prefix + B) - shows all issues with ⚡NEW markers
 └── plugins/
     └── tpm/                # Tmux Plugin Manager (git submodule)
 ```
