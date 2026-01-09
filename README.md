@@ -99,7 +99,7 @@ The prefix key is `Ctrl-a` (instead of the default `Ctrl-b` for better ergonomic
 | `prefix + 1-9` | Select window 1-9 |
 | `prefix + n` | Next window |
 | `prefix + p` | Previous window |
-| `prefix + a` | Last window |
+| `prefix + a` | Last window (quick toggle) |
 | `prefix + ,` | Rename window |
 | `prefix + X` | Kill window |
 | `prefix + w` | Window picker (fzf) |
@@ -112,6 +112,7 @@ The prefix key is `Ctrl-a` (instead of the default `Ctrl-b` for better ergonomic
 |-----|--------|
 | `prefix + f` | Session picker (fzf) |
 | `prefix + F` | Catalog picker (all sessions/windows) |
+| `prefix + A` | Last session (quick toggle) |
 | `prefix + .` | Rename session |
 
 ### Copy Mode (Vi-style)
