@@ -11,23 +11,59 @@ if [ -z "$sessions" ]; then
 fi
 
 # Build prompt - much simpler, focused on attention items
-prompt="⚠️ TMUX ATTENTION CHECK ⚠️
+prompt="⚠️ READ-ONLY MODE - OBSERVE ONLY ⚠️
 
-Scan these tmux panes and list ONLY items that need human attention.
+You are analyzing tmux pane content for a STATUS REPORT. You MUST:
+✓ ONLY use tmux read-only commands (see reference below)
+✓ ONLY output observations and status summaries
+✗ NEVER use other tools (Edit, Write, Web, etc.)
+✗ NEVER modify files, processes, or tmux state
+✗ NEVER run commands that change system state
+✗ NEVER try to fix anything
 
-Use this format:
+If you see an error, REPORT IT. Do NOT fix it.
+If you see a failed process, REPORT IT. Do NOT restart it.
+
+---
+
+## Tmux Commands Reference (READ-ONLY)
+
+You MAY use these tmux commands to gather more information:
+
+\`\`\`bash
+# List all sessions
+tmux list-sessions
+
+# List windows in a session
+tmux list-windows -t session_name
+
+# List panes in a window
+tmux list-panes -t session_name:window_index
+
+# Capture more lines from a pane (if you need more context)
+tmux capture-pane -t session_name:window_index.pane_index -p -S -100
+
+# Get pane current command (if available)
+tmux display-message -t session_name:window_index.pane_index -p '#{pane_current_command}'
+\`\`\`
+
+---
+
+## Output Format
+
+You MUST use this exact structure:
+
 🔴 session:window - brief issue/action
 🟡 session:window - brief issue/action
 🟢 session:window - brief issue/action
 
 Emoji guide:
+
 🔴 HIGH: Errors, crashes, stuck processes, failures
 🟡 MEDIUM: Waiting for input, pending requests, questions
 🟢 LOW: Running tasks (progress%), nice-to-have items
 
 If NOTHING needs attention, output: ✅ All clear - no immediate action needed
-
-Here are the panes:
 
 "
 
@@ -51,9 +87,10 @@ $content
     done <<< "$windows"
 done <<< "$sessions"
 
-prompt+="---
+prompt+="--- END ---
 
-List attention items only. Use the emoji format above. If all clear, say so."
+Generate the status report following the exact format specified above without additional text. Remember: BE CONCISE, visit all important panes, follow the format, no additional text."
 
 # Invoke Claude with haiku for speed, print mode for single output
-echo "$prompt" | claude --settings ~/.config/tmux/claude-settings.json -p --model haiku --max-turns 30 --permission-mode plan 2>/dev/null
+# Filter to only show lines with relevant emojis
+echo "$prompt" | claude --settings ~/.config/tmux/claude-settings.json -p --model haiku --max-turns 30 --permission-mode plan 2>/dev/null | grep -E '🔴|🟡|🟢|✅'
