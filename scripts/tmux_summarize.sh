@@ -111,19 +111,24 @@ while IFS= read -r session; do
     windows=$(tmux list-windows -t "$session" -F '#{window_index}:#{window_name}:#{window_active}' 2>/dev/null)
 
     while IFS=: read -r win_idx win_name win_active; do
-        # Get pane content (last 50 lines to catch progress bars near bottom)
-        content=$(tmux capture-pane -t "${session}:${win_idx}.0" -p -S -50 2>/dev/null)
+        # Get all panes in this window
+        panes=$(tmux list-panes -t "${session}:${win_idx}" -F '#{pane_index}' 2>/dev/null)
 
-        # Skip empty windows
-        if [ -z "$content" ]; then
-            continue
-        fi
+        while IFS= read -r pane_idx; do
+            # Get pane content (last 50 lines to catch progress bars near bottom)
+            content=$(tmux capture-pane -t "${session}:${win_idx}.${pane_idx}" -p -S -50 2>/dev/null)
 
-        # Add to prompt
-        prompt+="📍 session:$session window:$win_idx name:$win_name
+            # Skip empty panes
+            if [ -z "$content" ]; then
+                continue
+            fi
+
+            # Add to prompt (include pane index in format)
+            prompt+="📍 session:$session window:$win_idx.$pane_idx name:$win_name
 $content
 
 "
+        done <<< "$panes"
     done <<< "$windows"
 done <<< "$sessions"
 
