@@ -8,7 +8,7 @@ if [[ -f /proc/meminfo ]]; then
 
     if [[ -n "$mem_total" && -n "$mem_avail" && "$mem_total" -gt 0 ]]; then
         used=$((mem_total - mem_avail))
-        printf "%.0f%%" "$((100 * used / mem_total))"
+        printf "%d%%" "$((100 * used / mem_total))"
     else
         printf "%s" "--"
     fi

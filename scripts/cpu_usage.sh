@@ -11,7 +11,7 @@ get_cpu() {
         non_idle=$((user + nice + system + irq + softproc))
         total=$((idle + non_idle))
         if [[ $total -gt 0 ]]; then
-            printf "%.0f%%" "$((100 * non_idle / total))"
+            printf "%d%%" "$((100 * non_idle / total))"
             return 0
         fi
     fi
@@ -19,7 +19,7 @@ get_cpu() {
     # Fallback to top
     local cpu=$(top -bn1 2>/dev/null | grep -E "Cpu\(s\)" | awk '{print $2}' | cut -d'%' -f1)
     if [[ -n "$cpu" ]]; then
-        printf "%.0f%%" "$cpu"
+        printf "%d%%" "$cpu"
         return 0
     fi
 
