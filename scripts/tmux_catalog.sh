@@ -87,9 +87,11 @@ generate_fzf_list() {
                     path=$(tmux display-message -t "$pane_id" -p '#{pane_current_path}')
                     path="${path/#$HOME/\~}"
 
-                    # Format: "Session:Window | Name | Description" with target at end for parsing
-                    printf "%s:%s | %s | %s | %s\t%s\n" \
-                        "$session" "$win_index" "$win_name" "$description" "$path" "$session:$win_index"
+                    # Format with target at the END, separated by tab for fzf parsing
+                    # Visible format: "session:window | name | description | path"
+                    # Hidden target (after tab): "session:window"
+                    printf "%-20s %-20s %-40s %s\t%s\n" \
+                        "${session}:${win_index}" "$win_name" "$description" "$path" "${session}:${win_index}"
                 done
         done
 }
@@ -105,12 +107,12 @@ tmux_picker() {
 
     # Generate fzf list and pipe to fzf, capture selection to temp file
     (
-        generate_fzf_list | column -t -s '|' | \
+        generate_fzf_list | \
         fzf --prompt='Tmux> ' \
             --header='ENTER to switch | ESC to close' \
             --delimiter='\t' \
             --with-nth=1 \
-            --preview="echo {} | cut -f2 | sed 's|~|$HOME|g' | xargs tmux capture-pane -t -p -S -20 2>/dev/null" \
+            --preview="$HOME/.config/tmux/scripts/fzf_preview.sh {+}" \
             --preview-window='right:50%:border-left' \
             --height=100% \
             --border=rounded \
@@ -140,8 +142,8 @@ if ! command -v tmux &> /dev/null; then
     exit 1
 fi
 
-# Check if inside tmux
-if [[ -z "$TMUX" ]]; then
+# Check if inside tmux (popups might not have TMUX var, so check if tmux commands work)
+if ! tmux list-sessions &>/dev/null; then
     echo "Error: Not inside tmux session"
     exit 1
 fi

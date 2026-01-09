@@ -9,7 +9,11 @@ tu() {
     # If we have a session name, create or attach
     if [[ -n "$session_name" ]]; then
         if tmux has-session -t "$session_name" 2>/dev/null; then
-            tmux attach-session -t "$session_name"
+            if [[ -n "$TMUX" ]]; then
+                tmux switch-client -t "$session_name"
+            else
+                tmux attach-session -t "$session_name"
+            fi
         else
             tmux new-session -s "$session_name"
         fi
@@ -24,24 +28,14 @@ tu() {
         return
     fi
 
-    # Show fzf menu, sorted by last activity
-    local sessions=$(tmux list-sessions -F "#{session_activity} #{session_name}" 2>/dev/null | \
-        sort -rn | \
-        awk '{print $2}')
-
-    local selected=$(printf "%s\n" "$sessions" | fzf --prompt="Select tmux session> " --print-query)
-
-    local query=$(head -1 <<< "$selected")
-    local session=$(tail -1 <<< "$selected")
-
-    [[ -z "$session" && -z "$query" ]] && return 0
-
-    if [[ -n "$session" ]]; then
-        tmux attach-session -t "$session"
-    elif [[ -n "$query" ]]; then
-        tmux new-session -s "$query"
-    fi
+    # Show enhanced picker with preview
+    ~/.config/tmux/scripts/tmux_session_picker.sh
 }
 
 alias tl='tmux ls'
 alias ta='tmux attach'
+
+# Tmux catalog - interactive window/session picker with preview
+tc() {
+    ~/.config/tmux/scripts/tmux_catalog.sh
+}
