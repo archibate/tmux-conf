@@ -39,3 +39,9 @@ alias ta='tmux attach'
 tc() {
     ~/.config/tmux/scripts/tmux_catalog.sh
 }
+
+# Summarize all tmux windows using Claude
+alias ts='~/.config/tmux/scripts/tmux_summarize.sh'
+
+# Quick attention-only report (errors, stuck, waiting, progress)
+alias tb='~/.config/tmux/scripts/tmux_brief.sh'

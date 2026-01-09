@@ -61,6 +61,10 @@ Aliases:
 - `tl` - List sessions (`tmux ls`)
 - `ta` - Attach to session (`tmux attach`)
 - `tc` - Show catalog picker (`tmux_catalog.sh`)
+- `ts` - Full analysis: Claude Code panes, Other panes, Attention table (`tmux_summarize.sh`)
+- `tb` - Quick attention-only: 🔴🟡🟢 emoji priorities for issues/stuck/waiting/progress (`tmux_brief.sh`)
+
+Both use `claude-settings.json` to restrict to **tmux commands only** (safe, no file edits)
 
 ### Vim-style Keybindings
 This config is designed for vim users:
@@ -114,19 +118,22 @@ prefix + Ctrl-r  # Restore saved session
 ```
 ~/.config/tmux/
 ├── tmux.conf              # Main config file
+├── claude-settings.json   # Settings for `ts` - restricts Claude to tmux commands only
 ├── scripts/
 │   ├── cpu_usage.sh       # CPU percentage for status bar
 │   ├── mem_usage.sh       # Memory percentage for status bar
 │   ├── glm_usage_simple.py  # GLM API usage (cached 60s)
 │   ├── claude_status.sh   # Claude Code activity monitor (background process)
 │   ├── tmux_install.sh    # Installation helper
-│   ├── tmux_aliases.sh    # tu() function, tl/ta/tc aliases
+│   ├── tmux_aliases.sh    # tu() function, tl/ta/tc/ts aliases
 │   ├── tmux_window_picker.sh   # Window picker (prefix + w)
 │   ├── window_preview.sh       # Window preview content
 │   ├── tmux_session_picker.sh  # Session picker (prefix + f)
 │   ├── session_preview.sh      # Session preview content
-│   └── tmux_catalog.sh         # Catalog picker (prefix + F or tc)
-│   └── fzf_preview.sh          # Catalog preview content
+│   ├── tmux_catalog.sh         # Catalog picker (prefix + F or tc)
+│   ├── fzf_preview.sh          # Catalog preview content
+│   ├── tmux_summarize.sh       # Full Claude analysis (ts) - all panes with attention table
+│   └── tmux_brief.sh           # Quick attention-only (tb) - 🔴🟡🟢 emoji priorities
 └── plugins/
     └── tpm/                # Tmux Plugin Manager (git submodule)
 ```
