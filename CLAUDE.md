@@ -6,6 +6,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a vim-user-friendly tmux configuration using TPM (Tmux Plugin Manager). The config is located at `~/.config/tmux/tmux.conf` and is symlinked to `~/.tmux.conf`.
 
+## High-Level Architecture
+
+This configuration implements several integrated systems:
+
+1. **Session Management Layer** - Direct tmux commands, fuzzy pickers, shell aliases (`tu`, `tl`, `ta`, `tc`)
+2. **Status Monitoring Layer** - Real-time status bar (1s refresh), background monitors (Claude activity, brief issues)
+3. **Analysis Layer** - Full analysis (`ts`) with attention table, brief analysis (`tb`) with emoji priorities
+4. **Persistence Layer** - Manual save/restore (tmux-resurrect), auto-save every 5 minutes (tmux-continuum)
+5. **Plugin Layer** - TPM manages all plugins (yank, open, copycat, sidebar, which-key, mode-indicator)
+
+### Key Architectural Patterns
+
+**Fuzzy Picker Pattern** (all pickers use this):
+- Generate list with `visible_format\thidden_target` (tab-separated)
+- fzf `--with-nth=1` shows only visible part
+- fzf `--preview` script extracts target via `cut -f2`
+- Selection parsed with `cut -f2` to get the target
+- Preview limited to 30-50 lines for performance
+
+**Background Monitor Pattern** (claude_status.sh, tmux_brief_monitor.sh):
+- PID file at `/tmp/tmux_*_monitor.pid` for singleton behavior
+- `kill -0` check to verify if already running
+- Trap EXIT to clean up PID file
+- Store state in tmux options (`@claude-status`, `@brief-status`) for status bar consumption
+
+**Status Bar Script Pattern**:
+- Called every 1 second via `status-interval 1`
+- Must implement caching for expensive operations (API calls, file I/O)
+- Use `/proc` files for fastest system metrics
+- Output tmux color format: `#[fg=#color]text#[default]`
+
 ## Key Architecture
 
 ### Plugin Management (TPM)

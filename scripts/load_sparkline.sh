@@ -28,10 +28,10 @@ if (( now - last_update >= UPDATE_INTERVAL )); then
     history=("${history[@]:1}")
     history+=("$current_load")
   else
-    # First run - initialize with current load
+    # First run - initialize with zeros (zero padding), then add current load
     history=()
     for ((i=0; i<POINTS-1; i++)); do
-      history+=("$current_load")
+      history+=("0")
     done
     history+=("$current_load")
   fi
@@ -43,17 +43,6 @@ else
   readarray -t history < "$CACHE_FILE"
 fi
 
-# Get CPU count for scaling
-cpu_count=$(nproc)
-
-# For high-core systems, use a smaller scale for better visualization
-# Load of 1-8 is interesting on a 64-core system
-if (( cpu_count > 16 )); then
-  scale_max=8
-else
-  scale_max=$cpu_count
-fi
-
 # Calculate average load
 sum=0
 for val in "${history[@]}"; do
@@ -61,18 +50,21 @@ for val in "${history[@]}"; do
 done
 avg_load=$(echo "$sum / ${#history[@]}" | bc -l)
 
-# Fixed scale: 0 to scale_max
-min_val=0
-max_val=$scale_max
-range=$scale_max
+# Fixed scaling: use CPU count-based scale for consistent status bar display
+cpu_count=$(nproc)
+if (( cpu_count > 16 )); then
+  scale_max=8
+else
+  scale_max=$cpu_count
+fi
 
 # Sparkline characters (8 levels) - use array for reliable indexing
 declare -a SPARK_CHARS=('▁' '▂' '▃' '▄' '▅' '▆' '▇' '█')
 
 declare -a sparkline_arr
 for val in "${history[@]}"; do
-  # Scale to 0-7 range (8 levels)
-  normalized=$(echo "($val - $min_val) / $range" | bc -l)
+  # Scale to 0-7 range (8 levels) using fixed scale
+  normalized=$(echo "$val / $scale_max" | bc -l)
   idx=$(echo "$normalized * 7" | bc -l)
   idx=${idx/.*}  # Truncate to integer
   # Clamp to 0-7

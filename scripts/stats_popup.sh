@@ -23,8 +23,11 @@ CACHE_FILE="${TMPDIR:-/tmp}/tmux_sparkline_cache"
 declare -a SPARK_CHARS=('▁' '▂' '▃' '▄' '▅' '▆' '▇' '█')
 
 # Function to generate sparkline from cache
+# Args: col (1=CPU, 2=MEM, 3=GLM), use_dynamic (true/false)
+# GLM always uses fixed 0-100 scale, CPU/MEM use dynamic scaling when requested
 generate_from_cache() {
-  local col=$1  # Column number (1=CPU, 2=MEM, 3=GLM)
+  local col=$1
+  local use_dynamic=$2
   local points=20
 
   if [[ ! -f "$CACHE_FILE" ]]; then
@@ -32,24 +35,42 @@ generate_from_cache() {
     return
   fi
 
+  # GLM always uses fixed 0-100 scale
+  if [[ $col -eq 3 ]]; then
+    use_dynamic=false
+  fi
+
+  local max_val=100  # Default fixed scale
+  if [[ "$use_dynamic" == "true" ]]; then
+    # Find peak value for dynamic scaling
+    local peak=0
+    while IFS=$'\t' read -r cpu mem glm; do
+      local val=$(echo "$cpu $mem $glm" | awk -v c=$col '{print $c}')
+      (( val > peak )) && peak=$val
+    done < "$CACHE_FILE"
+    # Use peak*1.5 for headroom, minimum scale of 10 for low-usage systems
+    max_val=$(( peak * 3 / 2 ))  # peak * 1.5 using integer math
+    (( max_val < 10 )) && max_val=10
+  fi
+
+  # Generate sparkline
   declare -a spark_arr
-  local i=0
   while IFS=$'\t' read -r cpu mem glm; do
     local val=$(echo "$cpu $mem $glm" | awk -v c=$col '{print $c}')
-    local idx=$(( (val * 7) / 100 ))
+    local idx=$(( (val * 7) / max_val ))
     (( idx < 0 )) && idx=0
     (( idx > 7 )) && idx=7
     spark_arr+=("${SPARK_CHARS[$idx]}")
-    ((i++))
   done < "$CACHE_FILE"
 
   local IFS=
   echo "${spark_arr[*]}"
 }
 
-cpu_spark=$(generate_from_cache 1)
-mem_spark=$(generate_from_cache 2)
-glm_spark=$(generate_from_cache 3)
+# Generate sparklines: CPU/MEM use dynamic scaling, GLM uses fixed 0-100 scale
+cpu_spark=$(generate_from_cache 1 true)
+mem_spark=$(generate_from_cache 2 true)
+glm_spark=$(generate_from_cache 3 false)
 
 # Calculate historical stats (current/avg) from cache
 # Returns: current_value average_value (separate lines)
@@ -82,16 +103,28 @@ cpu_avg=$(calc_stats 1 | tail -1)
 mem_curr=$(calc_stats 2 | head -1)
 mem_avg=$(calc_stats 2 | tail -1)
 
-# Load sparkline (from separate cache) - load uses floats, need bc for math
+# Load sparkline (from separate cache) - load uses floats, need awk for math
+# Uses dynamic max scaling: peak*1.5 for headroom, minimum 1.0
 load_cache="${TMPDIR:-/tmp}/tmux_load_sparkline_cache"
 if [[ -f "$load_cache" ]]; then
-  load_spark=$(while read -r val; do
-    idx=$(echo "($val * 7) / 8" | bc)
-    idx=${idx/.*}  # Truncate to integer
-    (( idx < 0 )) && idx=0
-    (( idx > 7 )) && idx=7
-    echo -n "${SPARK_CHARS[$idx]}"
-  done < "$load_cache")
+  # Find peak and calculate max = peak*1.5 with minimum of 1.0
+  max_load=$(awk '{if ($1 > max) max = $1} END {
+    max_scaled = max * 1.5
+    if (max_scaled < 1.0) max_scaled = 1.0
+    print max_scaled
+  }' "$load_cache")
+
+  # Generate sparkline with dynamic scaling using awk
+  load_spark=$(awk -v max="$max_load" '{
+    idx = int(($1 * 7) / max)
+    if (idx < 0) idx = 0
+    if (idx > 7) idx = 7
+    chars[idx]
+  } BEGIN {
+    split("▁▂▃▄▅▆▇█", chars, "")
+  } {
+    printf "%s", chars[idx + 1]
+  }' "$load_cache")
 else
   load_spark="▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
 fi

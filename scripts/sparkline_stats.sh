@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 #
 # Multi-metric sparkline for tmux status bar
-# Usage: sparkline_stats.sh [POINTS]
+# Usage: sparkline_stats.sh [POINTS] [DYNAMIC]
 #   POINTS: number of history points to show (default: 1)
+#   DYNAMIC: "dynamic" for dynamic scaling, anything else for fixed 0-100 scale
 #   Cache always stores 20 points for history
 #
 # Examples:
-#   sparkline_stats.sh      # Show 1 point (for status bar)
-#   sparkline_stats.sh 20   # Show 20 points (for popup)
+#   sparkline_stats.sh         # Status bar: 1 point, fixed scale
+#   sparkline_stats.sh 20      # Popup: 20 points, fixed scale
+#   sparkline_stats.sh 20 dynamic  # Popup: 20 points, dynamic scaling
 #
 
 CACHE_FILE="${TMPDIR:-/tmp}/tmux_sparkline_cache"
 CACHE_POINTS=20  # Always store 20 points in cache
 SHOW_POINTS=${1:-1}  # How many points to display
+DYNAMIC_MODE=${2:-"fixed"}  # "dynamic" or "fixed"
 UPDATE_INTERVAL=5
 
 # Get current metrics
@@ -53,12 +56,12 @@ if (( now - last_update >= UPDATE_INTERVAL )); then
     mem_history+=("$mem_val")
     glm_history+=("$glm_val")
   else
-    # First run - initialize with current values
+    # First run - initialize with zeros (zero padding), then add current value
     declare -a cpu_history mem_history glm_history
     for ((i=0; i<CACHE_POINTS-1; i++)); do
-      cpu_history+=("$cpu_val")
-      mem_history+=("$mem_val")
-      glm_history+=("$glm_val")
+      cpu_history+=("0")
+      mem_history+=("0")
+      glm_history+=("0")
     done
     cpu_history+=("$cpu_val")
     mem_history+=("$mem_val")
@@ -85,11 +88,25 @@ fi
 declare -a SPARK_CHARS=('▁' '▂' '▃' '▄' '▅' '▆' '▇' '█')
 
 # Function to generate sparkline from history array
-# Args: hist_array_ref, max_scale, num_points_to_show
+# Args: hist_array_ref, num_points_to_show, dynamic_mode
+# dynamic_mode: "dynamic" for auto-scaling, "fixed" or "glm" for 0-100 scale
 generate_sparkline() {
   local -n hist=$1
-  local max_scale=$2
-  local num_points=$3
+  local num_points=$2
+  local dynamic_mode=$3
+
+  local max_val=100  # Default fixed scale (0-100 for percentages)
+
+  if [[ "$dynamic_mode" == "dynamic" ]]; then
+    # Find max value in history for dynamic scaling
+    local peak=0
+    for val in "${hist[@]}"; do
+      (( val > peak )) && peak=$val
+    done
+    # Use peak*1.5 for headroom, minimum scale of 10 for low-usage systems
+    max_val=$(( peak * 3 / 2 ))  # peak * 1.5 using integer math
+    (( max_val < 10 )) && max_val=10
+  fi
 
   # Take only the last N points
   local start_idx=$(( CACHE_POINTS - num_points ))
@@ -99,7 +116,7 @@ generate_sparkline() {
   for ((i=start_idx; i<=end_idx; i++)); do
     local val=${hist[$i]}
     # Scale to 0-7 range (8 levels)
-    local idx=$(( (val * 7) / max_scale ))
+    local idx=$(( (val * 7) / max_val ))
     (( idx < 0 )) && idx=0
     (( idx > 7 )) && idx=7
     spark_arr+=("${SPARK_CHARS[$idx]}")
@@ -110,10 +127,18 @@ generate_sparkline() {
   echo "${spark_arr[*]}"
 }
 
-# Generate sparklines (scale 0-100 for percentages)
-cpu_spark=$(generate_sparkline cpu_history 100 $SHOW_POINTS)
-mem_spark=$(generate_sparkline mem_history 100 $SHOW_POINTS)
-glm_spark=$(generate_sparkline glm_history 100 $SHOW_POINTS)
+# Generate sparklines
+# Status bar: fixed scale (consistent across time)
+# Popup: dynamic scale (except GLM which is always fixed)
+if [[ "$DYNAMIC_MODE" == "dynamic" ]]; then
+  cpu_spark=$(generate_sparkline cpu_history $SHOW_POINTS "dynamic")
+  mem_spark=$(generate_sparkline mem_history $SHOW_POINTS "dynamic")
+  glm_spark=$(generate_sparkline glm_history $SHOW_POINTS "glm")  # GLM always fixed
+else
+  cpu_spark=$(generate_sparkline cpu_history $SHOW_POINTS "fixed")
+  mem_spark=$(generate_sparkline mem_history $SHOW_POINTS "fixed")
+  glm_spark=$(generate_sparkline glm_history $SHOW_POINTS "glm")  # GLM always fixed
+fi
 
 # Output with color codes for tmux
 # Colors: CPU=green, MEM=blue, GLM=purple
