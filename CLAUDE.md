@@ -13,8 +13,9 @@ This configuration implements several integrated systems:
 1. **Session Management Layer** - Direct tmux commands, fuzzy pickers, shell aliases (`tu`, `tl`, `ta`, `tc`)
 2. **Status Monitoring Layer** - Real-time status bar (1s refresh), background monitors (Claude activity, brief issues)
 3. **Analysis Layer** - Full analysis (`ts`) with attention table, brief analysis (`tb`) with emoji priorities
-4. **Persistence Layer** - Manual save/restore (tmux-resurrect), auto-save every 5 minutes (tmux-continuum)
+4. **Persistence Layer** - Manual save/restore (tmux-resurrect), auto-save every 15 minutes (tmux-continuum)
 5. **Plugin Layer** - TPM manages all plugins (yank, open, copycat, sidebar, which-key, mode-indicator)
+6. **Stats Layer** - Sparkline-based resource monitoring (CPU, MEM, GLM, LOAD) with history caching
 
 ### Key Architectural Patterns
 
@@ -37,6 +38,12 @@ This configuration implements several integrated systems:
 - Use `/proc` files for fastest system metrics
 - Output tmux color format: `#[fg=#color]text#[default]`
 
+**Cache Pattern** (sparkline system):
+- Cache files stored in `/tmp` (`$TMPDIR/tmux_*_cache`)
+- Zero-padding initialization for first run (avoid showing fake history)
+- Fixed-size FIFO queues (20 points for sparklines)
+- Separate update interval from display (cache updates every 5s, display can show 1-20 points)
+
 ## Key Architecture
 
 ### Plugin Management (TPM)
@@ -50,7 +57,8 @@ This configuration implements several integrated systems:
 Custom scripts in `scripts/` are called from the status bar:
 - `cpu_usage.sh` - CPU percentage via `/proc/stat`
 - `mem_usage.sh` - Memory percentage via `/proc/meminfo`
-- `glm_usage_simple.py` - GLM API usage (reads from `~/.claude/settings.json`, caches for 60s)
+- `glm_usage_simple.py` - GLM/Anthropic API usage percentage (reads from `~/.claude/settings.json`, 60s cache)
+- `sparkline_stats.sh` - Multi-metric sparkline for CPU/MEM/GLM (uses 5s cache, stores 20 points)
 - `claude_status.sh` - Claude Code activity monitor (background process, shows ✻ in window list when Claude is active)
 
 The status bar updates every 1 second (`set -g status-interval 1`), so scripts must be fast and have caching.
@@ -106,11 +114,46 @@ This config is designed for vim users:
 - Copy mode: vi-style with `v` for visual selection, `y` to yank
 - Windows: `1`-`9` to select, `n`/`p` for next/prev, `,` to rename
 - Pickers: `w` (window), `f` (session), `F` (catalog)
+- Popups: `i` (stats), `B` (brief), `?` (help)
 
 ### Session Persistence (tmux-resurrect + tmux-continuum)
 - **tmux-resurrect**: Manual save/restore of sessions (including pane content, running processes)
-- **tmux-continuum**: Automatic save every 5 minutes, auto-restore on tmux start
+- **tmux-continuum**: Automatic save every 15 minutes, auto-restore on tmux start
 - All plugins are managed through TPM
+
+### Stats & Sparkline System
+Multi-metric resource monitoring with history visualization:
+
+**Scripts:**
+- `sparkline_stats.sh` - Core sparkline generator (status bar + popup)
+- `load_sparkline.sh` - Load average sparkline with separate cache
+- `stats_popup.sh` - Detailed stats popup (prefix + i)
+- `cpu_usage.sh` - CPU percentage via `/proc/stat`
+- `mem_usage.sh` - Memory percentage via `/proc/meminfo`
+- `glm_usage_simple.py` - GLM/Anthropic API usage from `~/.claude/settings.json` (60s cache)
+
+**Metrics:**
+- **LOAD** - System load average (1-min, 5-min, 15-min) via `/proc/loadavg`
+- **CPU** - CPU usage percentage (dynamic scaling)
+- **MEM** - Memory usage percentage (dynamic scaling)
+- **GLM** - Anthropic API token usage (fixed 0-100 scale, reads from Claude settings)
+
+**Cache Files** (all in `$TMPDIR/tmux`, default `/tmp`):
+- `tmux_sparkline_cache` - CPU/MEM/GLM history (20 points, 5s update interval)
+- `tmux_load_sparkline_cache` - Load average history (20 points)
+- `.glm_usage_cache` - GLM API usage (60s TTL)
+
+**Usage:**
+```bash
+# Status bar: 1 point, fixed scale
+~/.config/tmux/scripts/sparkline_stats.sh 1
+
+# Popup: 20 points, dynamic scaling (except GLM which is always fixed)
+~/.config/tmux/scripts/sparkline_stats.sh 20 dynamic
+```
+
+**Keybinding:**
+- `prefix + i` - Show stats popup with 20-point sparklines
 
 ### Claude Code Status Indicator
 The `@claude-status` window option is set by `claude_status.sh`:
@@ -120,6 +163,8 @@ The `@claude-status` window option is set by `claude_status.sh`:
 - Checks pane content for spinner patterns: `✻.*(Contemplating|Working|Thinking|…|\.\.\.)`
 
 ### Tmux Brief Monitoring System
+**NOTE: Currently disabled in tmux.conf (line 167)**
+
 Automatically monitors all tmux panes for issues and notifies when NEW problems appear:
 
 **Scripts:**
@@ -178,7 +223,7 @@ tmux attach -t <name>  # or: ta <name> (alias)
 # Session save/restore (tmux-resurrect)
 prefix + Ctrl-s  # Save session manually
 prefix + Ctrl-r  # Restore saved session
-# Note: tmux-continuum auto-saves every 5 minutes and auto-restores on start
+# Note: tmux-continuum auto-saves every 15 minutes and auto-restores on start
 ```
 
 ## File Structure
@@ -190,10 +235,13 @@ prefix + Ctrl-r  # Restore saved session
 ├── scripts/
 │   ├── cpu_usage.sh       # CPU percentage for status bar
 │   ├── mem_usage.sh       # Memory percentage for status bar
-│   ├── glm_usage_simple.py  # GLM API usage (cached 60s)
-│   ├── claude_status.sh   # Claude Code activity monitor (background process)
-│   ├── tmux_install.sh    # Installation helper
-│   ├── tmux_aliases.sh    # tu() function, tl/ta/tc/tb aliases
+│   ├── glm_usage_simple.py  # GLM API usage from ~/.claude/settings.json (60s cache)
+│   ├── sparkline_stats.sh  # Multi-metric sparkline (CPU/MEM/GLM) with history cache
+│   ├── load_sparkline.sh   # Load average sparkline
+│   ├── stats_popup.sh      # Stats popup (prefix + i) with 20-point sparklines
+│   ├── claude_status.sh    # Claude Code activity monitor (background process)
+│   ├── tmux_install.sh     # Installation helper
+│   ├── tmux_aliases.sh     # tu() function, tl/ta/tc/tb aliases
 │   ├── tmux_window_picker.sh   # Window picker (prefix + w)
 │   ├── window_preview.sh       # Window preview content
 │   ├── tmux_session_picker.sh  # Session picker (prefix + f)
