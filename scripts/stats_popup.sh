@@ -16,7 +16,7 @@ C_RESET=$'\033[0m'
 cpu_curr=$(~/.config/tmux/scripts/cpu_usage.sh)
 mem_curr=$(~/.config/tmux/scripts/mem_usage.sh)
 glm_curr=$(~/.config/tmux/scripts/glm_usage_simple.py)
-load_curr=$(awk '{print $1, $2, $3}' /proc/loadavg)
+load_curr=$(awk '{printf "%5.2f %5.2f %5.2f", $1, $2, $3}' /proc/loadavg)
 
 # Read cache directly to generate sparklines
 CACHE_FILE="${TMPDIR:-/tmp}/tmux_sparkline_cache"
@@ -132,10 +132,10 @@ fi
 # Clear screen and show stats
 clear
 cat << 'EOF'
-╔═══════════════════════════════════════════╗
-║          SYSTEM RESOURCE MONITOR          ║
-╠═══════════════════════════════════════════╣
-║                                           ║
+╔══════════════════════════════════════════════╗
+║           SYSTEM RESOURCE MONITOR            ║
+╠══════════════════════════════════════════════╣
+║                                              ║
 EOF
 
 # Function to format a row with right border
@@ -145,7 +145,7 @@ format_row() {
   local label=$2
   local spark=$3
   local value=$4
-  local box_width=41  # Inner width (between borders)
+  local box_width=44  # Inner width (between borders)
 
   # Calculate content length
   # Label (4) + 2 spaces + sparkline (20) + 1 space = 27 chars before value
@@ -164,7 +164,7 @@ format_row_split() {
   local spark=$3
   local current=$4
   local avg=$5
-  local box_width=41  # Inner width (between borders)
+  local box_width=44  # Inner width (between borders)
 
   # Label (4) + 2 spaces + sparkline (20) + 1 space = 27 chars before value area
   local prefix_len=27
@@ -209,8 +209,8 @@ format_row_split "$C_BLUE" "MEM " "$mem_spark" "$mem_curr" "$mem_avg"
 format_row_split "$C_PURPLE" "GLM " "$glm_spark" "${glm_curr//%/}" ""
 
 cat << 'EOF'
-║                                           ║
-╚═══════════════════════════════════════════╝
+║                                              ║
+╚══════════════════════════════════════════════╝
 EOF
 
 # Wait for any key press
