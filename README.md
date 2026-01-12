@@ -25,19 +25,17 @@ brew install tmux fzf tree python3             # macOS
 # 2. Clone this repository
 git clone <your-repo-url> ~/.config/tmux
 
-# 3. Run the installer (sets up config + aliases)
+# 3. Run the installer (sets up config + aliases + TPM + plugins)
 bash ~/.config/tmux/scripts/tmux_install.sh
 
 # 4. Start tmux
 tmux start-server
-
-# 5. Install plugins (press prefix + I in tmux, or run below)
-~/.tmux/plugins/tpm/bin/install_plugins
 ```
 
 That's it! The installer sets up:
 - `~/.tmux.conf` symlink to the config
 - Shell aliases (`tu`, `tl`, `ta`, `tc`, `ts`, `tb`)
+- TPM (Tmux Plugin Manager) and all plugins
 
 ## Key Bindings
 
@@ -293,8 +291,10 @@ Automatically monitors all tmux panes for issues and notifies when new problems 
 
 ### TPM (Plugin Manager)
 
+**Note**: TPM and all plugins are installed automatically by the installer script. Use these commands to manually manage plugins.
+
 ```bash
-# Install plugins
+# Install plugins (if not already installed)
 ~/.tmux/plugins/tpm/bin/install_plugins # equivalent to: prefix + I
 
 # Update plugins
@@ -365,10 +365,13 @@ Uses [Gruvbox](https://github.com/morhetz/gruvbox) colors:
 ### Plugins not loading
 
 ```bash
-# Install TPM manually
+# Re-run the installer (handles TPM + plugins)
+bash ~/.config/tmux/scripts/tmux_install.sh
+
+# Or install TPM manually
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
-# Install plugins
+# Then install plugins
 ~/.tmux/plugins/tpm/bin/install_plugins
 ```
 
