@@ -9,63 +9,41 @@ A vim-user-friendly tmux configuration with TPM (Tmux Plugin Manager), featuring
 - **Vim-style keybindings** - Navigate panes with `h`/`j`/`k`/`l`, resize with `H`/`J`/`K`/`L`
 - **Fuzzy pickers** - fzf-powered session, window, and catalog browsers with live preview
 - **Beautiful status bar** - Gruvbox color scheme with CPU, memory, and API usage indicators
-- **Session persistence** - Auto-save every 5 minutes with tmux-continuum
+- **Session persistence** - Auto-save every 15 minutes with tmux-continuum
 - **Smart clipboard** - tmux-yank for seamless system clipboard integration
 - **Claude Code aware** - Shows `✻` indicator when Claude is thinking
+- **Stats popup** - Real-time system metrics with sparkline history (prefix + i)
+- **Issue monitoring** - Background detection of new issues across panes (optional)
 
 ## Installation
 
-### Prerequisites
-
 ```bash
-# Install tmux (3.0+ required)
-sudo apt install tmux  # Debian/Ubuntu
-brew install tmux      # macOS
+# 1. Install dependencies
+sudo apt install tmux fzf xsel tree python3   # Debian/Ubuntu
+brew install tmux fzf tree python3             # macOS
 
-# Install dependencies
-sudo apt install fzf xsel tree python3  # Debian/Ubuntu
-brew install fzf tree python3           # macOS
-```
+# 2. Clone this repository
+git clone <your-repo-url> ~/.config/tmux
 
-### Quick Install
+# 3. Run the installer (sets up config + aliases)
+bash ~/.config/tmux/scripts/tmux_install.sh
 
-```bash
-# Clone this repository
-git clone https://github.com/yourusername/tmux-config.git ~/.config/tmux
+# 4. Start tmux
+tmux start-server
 
-# Create symlink
-ln -s ~/.config/tmux/tmux.conf ~/.tmux.conf
-
-# Install TPM plugins
+# 5. Install plugins (press prefix + I in tmux, or run below)
 ~/.tmux/plugins/tpm/bin/install_plugins
-
-# Source the config
-tmux source-file ~/.tmux.conf
 ```
 
-### Manual Install
-
-1. Copy `tmux.conf` to `~/.tmux.conf` or `~/.config/tmux/tmux.conf`
-2. Add the following to your shell config (`~/.bashrc`, `~/.zshrc`):
-
-```bash
-# Tmux aliases
-source ~/.config/tmux/scripts/tmux_aliases.sh
-```
-
-3. Install TPM:
-
-```bash
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-```
-
-4. Install plugins: Press `prefix + I` (default prefix: `Ctrl-a`)
+That's it! The installer sets up:
+- `~/.tmux.conf` symlink to the config
+- Shell aliases (`tu`, `tl`, `ta`, `tc`, `ts`, `tb`)
 
 ## Key Bindings
 
 ### Prefix
 
-The prefix key is `Ctrl-a` (instead of the default `Ctrl-b` for better ergonomics).
+The prefix key is `Ctrl-a` (instead of the tmux built-in default `Ctrl-b` for better ergonomics).
 
 ### Pane Navigation (Vim-style)
 
@@ -127,6 +105,14 @@ The prefix key is `Ctrl-a` (instead of the default `Ctrl-b` for better ergonomic
 | `Y` | Copy to system clipboard (via xclip) |
 | `p` | Paste from tmux buffer |
 | `i`/`a`/`q`/`Esc` | Exit copy mode |
+
+### Plugin Management
+
+| Key | Action |
+|-----|--------|
+| `prefix + I` | Install plugins |
+| `prefix + U` | Update plugins |
+| `prefix + R` | Reload `~/.tmux.conf` |
 
 ### Misc
 
@@ -196,7 +182,7 @@ In copy mode:
 | `prefix + Ctrl-s` | Save session manually |
 | `prefix + Ctrl-r` | Restore saved session |
 
-**Note**: tmux-continuum auto-saves every 5 minutes and auto-restores on tmux start.
+**Note**: tmux-continuum auto-saves every 15 minutes and auto-restores on tmux start.
 
 ## Useful Default Tmux Bindings (Not Overridden)
 
@@ -223,7 +209,9 @@ After sourcing `tmux_aliases.sh`:
 | `tu .` | Create/use session named after current directory |
 | `tl` | List sessions (`tmux ls`) |
 | `ta` | Attach to session (`tmux attach`) |
-| `tc` | Show catalog picker |
+| `tc` | Show catalog picker (all sessions/windows) |
+| `ts` | Full Claude analysis with attention table |
+| `tb` | Quick attention-only view (🔴🟡🟢) |
 
 ## Status Bar
 
@@ -241,16 +229,76 @@ The status bar shows (left to right):
 
 When using Claude Code, a `✻` appears in the window list when Claude is thinking. This is handled by the `claude_status.sh` background monitor.
 
+### Stats Popup (`prefix + i`)
+
+Shows real-time system metrics with 20-point sparkline history:
+
+| Metric | Description |
+|--------|-------------|
+| **LOAD** | 1/5/15-minute load averages (scaled by CPU cores) |
+| **CPU** | Current usage percentage with average |
+| **MEM** | Memory usage percentage with average |
+| **GLM** | Claude API token usage (fixed 0-100 scale) |
+
+Color-coded with Gruvbox: 🔴 high > 🟡 medium > 🟢 low.
+
+### Sparkline Cache System
+
+Status bar scripts use caching to ensure 1-second refresh rate doesn't impact performance:
+
+| Cache File | Metric | Update Interval | Data Points |
+|------------|--------|-----------------|-------------|
+| `/tmp/tmux_sparkline_cache` | CPU/MEM/GLM | 5 seconds | 20 points |
+| `/tmp/tmux_load_sparkline_cache` | LOAD | 5 seconds | 20 points |
+| `/tmp/.glm_usage_cache` | GLM API usage | 60 seconds | 1 point |
+
+The cache ensures smooth status bar updates while keeping resource usage low.
+
+### Claude Analysis Commands
+
+| Command | Action |
+|---------|--------|
+| `ts` | Full analysis with attention table and pane content |
+| `tb` | Quick attention-only view with emoji priorities (🔴🟡🟢) |
+
+Both commands operate in read-only mode and only invoke tmux commands (no file edits).
+
+### Issue Monitoring System (Optional)
+
+**Note:** This feature is currently disabled in `tmux.conf`. To enable, uncomment the `run-shell -b` line.
+
+Automatically monitors all tmux panes for issues and notifies when new problems appear:
+
+**Keybinding:**
+- `prefix + B` - Show brief popup with all current issues
+
+**Status bar indicators:**
+- `·` (gray dot) - No new issues
+- `⚠1` (red) - New 🔴 high-priority issues
+- `⚠1` (yellow) - New 🟡 medium-priority issues
+
+**Manual control:**
+```bash
+# Check monitor status
+~/.config/tmux/scripts/tmux_brief_monitor.sh --status
+
+# Stop monitor
+~/.config/tmux/scripts/tmux_brief_monitor.sh --stop
+
+# Run single check
+~/.config/tmux/scripts/tmux_brief_monitor.sh --once
+```
+
 ## Configuration
 
 ### TPM (Plugin Manager)
 
 ```bash
 # Install plugins
-prefix + I
+~/.tmux/plugins/tpm/bin/install_plugins # equivalent to: prefix + I
 
 # Update plugins
-prefix + U
+~/.tmux/plugins/tpm/bin/update_plugins # equivalent to: prefix + U
 
 # Clean unused plugins
 ~/.tmux/plugins/tpm/bin/clean_plugins
