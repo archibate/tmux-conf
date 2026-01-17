@@ -46,7 +46,7 @@ That's it! The installer sets up:
 
 ### Prefix
 
-The prefix key is `Ctrl-a` (instead of the tmux built-in default `Ctrl-b` for better ergonomics).
+The prefix key is `Ctrl-z` (instead of the tmux built-in default `Ctrl-b` for better ergonomics).
 
 ### Pane Navigation (Vim-style)
 
@@ -324,9 +324,9 @@ tmux reload
 Edit `tmux.conf` to customize:
 
 ```tmux
-# Change prefix (default: Ctrl-a)
+# Change prefix key to Ctrl-z
 unbind C-b
-set -g prefix C-a
+set -g prefix C-z
 
 # Add more plugins
 set -g @plugin 'githubusername/reponame'
