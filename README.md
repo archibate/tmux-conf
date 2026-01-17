@@ -2,7 +2,7 @@
 
 A vim-user-friendly tmux configuration with TPM (Tmux Plugin Manager), featuring fuzzy pickers, beautiful Gruvbox status bar, and smart session management.
 
-![Screenshot](screenshot.png)
+![Screenshot](cover.png)
 
 ```bash
 git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1
