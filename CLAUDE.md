@@ -53,6 +53,14 @@ This configuration implements several integrated systems:
 - Update all plugins: `prefix + U` or `~/.tmux/plugins/tpm/bin/update_plugins`
 - Clean unused plugins: `~/.tmux/plugins/tpm/bin/clean_plugins`
 
+### tmux.nvim Integration
+The `aserowy/tmux.nvim` plugin enables seamless navigation between Neovim splits and tmux panes:
+- **Navigation**: `Ctrl-h`/`Ctrl-j`/`Ctrl-k`/`Ctrl-l` - Smart navigation that works in both Vim and tmux
+  - When in Vim over a split edge, automatically moves to adjacent tmux pane
+  - When in tmux, moves between panes normally
+- **Resize**: `Alt-h`/`Alt-j`/`Alt-k`/`Alt-l` - Resize Vim splits or tmux panes
+- Both navigation and resize cycle through all panes (`@tmux-nvim-navigation-cycle` is enabled)
+
 ### Status Bar Scripts
 Custom scripts in `scripts/` are called from the status bar:
 - `cpu_usage.sh` - CPU percentage via `/proc/stat`
@@ -103,11 +111,11 @@ Aliases:
 - `ts` - Full analysis: Claude Code panes, Other panes, Attention table (`tmux_summarize.sh`)
 - `tb` - Quick attention-only: 🔴🟡🟢 emoji priorities for issues/stuck/waiting/progress (`tmux_brief.sh`)
 
-Both use `claude-settings.json` to restrict to **tmux commands only** (safe, no file edits)
+**`ts` and `tb` require `claude-settings.json`**: These commands use Claude Code to analyze pane content. To run safely, they reference `~/.config/tmux/claude-settings.json` (user-provided) to restrict Claude to **tmux commands only** (no file edits). Create this file to enable these commands.
 
 ### Vim-style Keybindings
 This config is designed for vim users:
-- Prefix: `Ctrl-a` (not `Ctrl-b`)
+- Prefix: `Ctrl-z` (not `Ctrl-b`)
 - Pane nav: `h`/`j`/`k`/`l` (vim-style)
 - Pane resize: `H`/`J`/`K`/`L` (shift = resize)
 - Splits: `s` (horizontal), `v` (vertical)
@@ -117,6 +125,15 @@ This config is designed for vim users:
 - Popups: `i` (stats), `B` (brief), `?` (help)
 
 ### Session Persistence (tmux-resurrect + tmux-continuum)
+**NOTE: Currently commented out in tmux.conf (lines 195-196)**
+
+To enable session persistence, uncomment these lines in `tmux.conf`:
+```tmux
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+```
+
+Features:
 - **tmux-resurrect**: Manual save/restore of sessions (including pane content, running processes)
 - **tmux-continuum**: Automatic save every 15 minutes, auto-restore on tmux start
 - All plugins are managed through TPM
@@ -231,7 +248,7 @@ prefix + Ctrl-r  # Restore saved session
 ```
 ~/.config/tmux/
 ├── tmux.conf              # Main config file
-├── claude-settings.json   # Settings for `ts` - restricts Claude to tmux commands only
+├── claude-settings.json   # (user-provided) Settings for `ts`/`tb` - restricts Claude to tmux commands only
 ├── scripts/
 │   ├── cpu_usage.sh       # CPU percentage for status bar
 │   ├── mem_usage.sh       # Memory percentage for status bar
