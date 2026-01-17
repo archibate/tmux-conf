@@ -210,7 +210,7 @@ In copy mode:
 
 ## Shell Aliases
 
-After sourcing `tmux_aliases.sh`:
+After sourcing [`~/.config/tmux/scripts/tmux_aliases.sh`](scripts/tmux_aliases.sh):
 
 | Command | Action |
 |---------|--------|
