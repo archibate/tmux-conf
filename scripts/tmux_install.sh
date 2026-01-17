@@ -53,7 +53,7 @@ if [ ! -d "$TPM_DIR" ]; then
     tmux kill-server
     tmux start-server
     tmux kill-server
-    echo "✓ Tmux server restarted"
+    echo "✓ Tmux server restarted."
 else
     echo "✓ TPM already installed at $TPM_DIR"
 fi
@@ -73,5 +73,5 @@ echo "✅ Installation complete!"
 echo ""
 echo "Next steps:"
 echo "  1. Restart your shell or run: source $SHELL_RC"
-echo "  2. Start tmux: tmux start-server"
+echo "  2. Start tmux server: tmux start-server"
 echo "  3. (Optional) Reload config inside tmux: tmux source-file ~/.tmux.conf"

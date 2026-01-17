@@ -5,7 +5,7 @@ A vim-user-friendly tmux configuration with TPM (Tmux Plugin Manager), featuring
 ![Screenshot](screenshot.png)
 
 ```bash
-git clone git@github.com:archibate/tmux-conf ~/.config/tmux
+git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1
 ~/.config/tmux/tmux_install.sh
 ```
 
