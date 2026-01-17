@@ -7,7 +7,7 @@
 ## 一键快捷安装
 
 ```bash
-git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1 && ~/.config/tmux/tmux_install.sh
+git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1 && ~/.config/tmux/scripts/tmux_install.sh
 ```
 
 推荐搭配小彭老师的 [NeoVim 配置](https://github.com/archibate/vimrc) 一起使用。
@@ -67,6 +67,10 @@ Tmux 可以保存你的整个工作环境：多个窗格、每个窗格运行的
 
 **4. 高效复制 - 超越终端限制**
 普通终端难以复制多行文本（特别是跨行的日志输出）。Tmux 的复制模式可以让你像在 Vim 里一样自由移动光标，选中任意范围的文本，甚至使用正则搜索快速定位内容，然后一键复制到系统剪贴板，或粘贴命令到 Bash 中执行。
+
+**5. 内容同步 - 多端共享**
+
+同一个 Tmux 会话可以被多个终端窗口同时访问，远程协作时你和队友可以同步看到相同的界面输出。从电脑到手机，无缝切换共享相同进程无需重启，只需 attach 到同一个会话，重现之前运行中的所有工作。
 
 即使您不是 SSH 用户，Tmux 也是必须的：
 
@@ -132,7 +136,7 @@ tmux server
 
 ### 理解 Tmux 的三大模式
 
-Tmux 有三种工作模式，如果你熟悉 Vim，这些模式会非常直观：
+Tmux 有三种主要工作模式，如果你熟悉 Vim，这些模式会非常直观：
 
 | 模式 | Vim 类比 | 说明 |
 |------|----------|------|
@@ -141,6 +145,7 @@ Tmux 有三种工作模式，如果你熟悉 Vim，这些模式会非常直观�
 | **COPY** | 普通模式 | 复制模式，可以用 `h/j/k/l` 自由移动光标浏览历史输出，不受终端限制，也支持类似 Vim 的 `w/e/^/$` 等键位 |
 | **VISUAL** | 可视模式 | 复制模式的一个子模式，在复制模式下按 `v` 进入，可以自由移动光标选中文本后，按 `y` 复制 |
 | **EX** | EX 模式 | 按下前缀键 `C-z` 后，再按 `:`，可进入任意命令的输入，例如 `:detach` 等价于运行了 `tmux detach` |
+| **SYNC** | 多光标模式 | 可在多个终端同步输入相同命令，不常用 |
 
 #### 模式切换方式
 
