@@ -11,12 +11,12 @@ git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1
 
 ## Features
 
-- **Vim-style keybindings** - Navigate panes with `h`/`j`/`k`/`l`, resize with `H`/`J`/`K`/`L`
+- **Vim-style keybindings** - Navigate panes with `C-h`/`C-j`/`C-k`/`C-l`, resize with `M-h`/`M-j`/`M-k`/`M-l`
 - **Fuzzy pickers** - fzf-powered session, window, and catalog browsers with live preview
 - **Beautiful status bar** - Gruvbox color scheme with CPU, memory, and API usage indicators
 - **Session persistence** - Auto-save every 15 minutes with tmux-continuum
 - **Smart clipboard** - tmux-yank for seamless system clipboard integration
-- **Claude Code aware** - Shows `✻` indicator when Claude is thinking
+<!-- - **Claude Code aware** - Shows `✻` indicator when Claude is thinking -->
 - **Stats popup** - Real-time system metrics with sparkline history (prefix + i)
 - **Issue monitoring** - Background detection of new issues across panes (optional)
 
@@ -48,26 +48,34 @@ That's it! The installer sets up:
 
 The prefix key is `Ctrl-z` (instead of the tmux built-in default `Ctrl-b` for better ergonomics).
 
-### Pane Navigation (Vim-style)
+You can customize prefix key in [tmux.conf](tmux.conf):
+
+```tmux
+unbind C-b
+set -g prefix C-z
+bind C-z send-prefix
+```
+
+### Pane Navigation
 
 | Key | Action |
 |-----|--------|
-| `h` | Move to left pane |
-| `j` | Move to pane below |
-| `k` | Move to pane above |
-| `l` | Move to right pane |
-| `H` | Resize pane left 5 cells |
-| `J` | Resize pane down 5 cells |
-| `K` | Resize pane up 5 cells |
-| `L` | Resize pane right 5 cells |
-| `x` | Kill current pane |
-| `b` | Break pane to new window |
+| `prefix + h` | Move to left pane |
+| `prefix + j` | Move to pane below |
+| `prefix + k` | Move to pane above |
+| `prefix + l` | Move to right pane |
+| `prefix + x` | Kill current pane |
+| `prefix + b` | Break pane to new window |
 | `prefix + m` | Move pane to another window |
 
-### Pane Splits
+### Pane Management
 
 | Key | Action |
 |-----|--------|
+| `prefix + H` | Move pane to left |
+| `prefix + J` | Move pane below |
+| `prefix + K` | Move pane above |
+| `prefix + L` | Move pane to right |
 | `prefix + s` | Horizontal split (like vim `:split`) |
 | `prefix + v` | Vertical split (like vim `:vsplit`) |
 | `prefix + r` | Rotate panes |
@@ -80,12 +88,10 @@ The prefix key is `Ctrl-z` (instead of the tmux built-in default `Ctrl-b` for be
 | `prefix + 1-9` | Select window 1-9 |
 | `prefix + n` | Next window |
 | `prefix + p` | Previous window |
-| `prefix + a` | Last window (quick toggle) |
+| `prefix + z` | Last window (quick toggle) |
 | `prefix + ,` | Rename window |
 | `prefix + X` | Kill window |
 | `prefix + w` | Window picker (fzf) |
-| `prefix + C-h` | Move window left |
-| `prefix + C-l` | Move window right |
 
 ### Session Management
 
@@ -93,8 +99,9 @@ The prefix key is `Ctrl-z` (instead of the tmux built-in default `Ctrl-b` for be
 |-----|--------|
 | `prefix + f` | Session picker (fzf) |
 | `prefix + F` | Catalog picker (all sessions/windows) |
-| `prefix + A` | Last session (quick toggle) |
+| `prefix + a` | Last session (quick toggle) |
 | `prefix + .` | Rename session |
+| `prefix + d` | Detach session |
 
 ### Copy Mode (Vi-style)
 
@@ -122,7 +129,7 @@ The prefix key is `Ctrl-z` (instead of the tmux built-in default `Ctrl-b` for be
 | Key | Action |
 |-----|--------|
 | `prefix + ?` | List all key bindings |
-| `prefix + Ctrl-w` | Save pane to file (`~/tmux-capture-*.txt`) |
+| `prefix + Ctrl-w` | Save pane to file (`/tmp/tmux-capture-YYYYMMDD-HHMMSS.txt`) |
 | `prefix + P` | Paste buffer |
 
 ## Plugin Key Bindings
@@ -266,31 +273,31 @@ The cache ensures smooth status bar updates while keeping resource usage low.
 
 Both commands operate in read-only mode and only invoke tmux commands (no file edits).
 
-### Issue Monitoring System (Optional)
-
-**Note:** This feature is currently disabled in `tmux.conf`. To enable, uncomment the `run-shell -b` line.
-
-Automatically monitors all tmux panes for issues and notifies when new problems appear:
-
-**Keybinding:**
-- `prefix + B` - Show brief popup with all current issues
-
-**Status bar indicators:**
-- `·` (gray dot) - No new issues
-- `⚠1` (red) - New 🔴 high-priority issues
-- `⚠1` (yellow) - New 🟡 medium-priority issues
-
-**Manual control:**
-```bash
-# Check monitor status
-~/.config/tmux/scripts/tmux_brief_monitor.sh --status
-
-# Stop monitor
-~/.config/tmux/scripts/tmux_brief_monitor.sh --stop
-
-# Run single check
-~/.config/tmux/scripts/tmux_brief_monitor.sh --once
-```
+<!-- ### Issue Monitoring System (Optional) -->
+<!--  -->
+<!-- **Note:** This feature is currently disabled in `tmux.conf`. To enable, uncomment the `run-shell -b` line. -->
+<!--  -->
+<!-- Automatically monitors all tmux panes for issues and notifies when new problems appear: -->
+<!--  -->
+<!-- **Keybinding:** -->
+<!-- - `prefix + B` - Show brief popup with all current issues -->
+<!--  -->
+<!-- **Status bar indicators:** -->
+<!-- - `·` (gray dot) - No new issues -->
+<!-- - `⚠1` (red) - New 🔴 high-priority issues -->
+<!-- - `⚠1` (yellow) - New 🟡 medium-priority issues -->
+<!--  -->
+<!-- **Manual control:** -->
+<!-- ```bash -->
+<!-- # Check monitor status -->
+<!-- ~/.config/tmux/scripts/tmux_brief_monitor.sh --status -->
+<!--  -->
+<!-- # Stop monitor -->
+<!-- ~/.config/tmux/scripts/tmux_brief_monitor.sh --stop -->
+<!--  -->
+<!-- # Run single check -->
+<!-- ~/.config/tmux/scripts/tmux_brief_monitor.sh --once -->
+<!-- ``` -->
 
 ## Configuration
 
@@ -396,12 +403,7 @@ chmod +x ~/.config/tmux/scripts/*.sh
 chmod +x ~/.config/tmux/scripts/*.py
 ```
 
-## License
-
-MIT
-
 ## Credits
 
 - [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
-- [Greg Hurrell](https://github.com/wincent) for original vim-style config inspiration
-- [Gruvbox](https://github.com/morhetz/gruvbox) for color scheme
+- [Gruvbox](https://github.com/morhetz/gruvbox) for color scheme inspiration
