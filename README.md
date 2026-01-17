@@ -1,6 +1,6 @@
 # 小彭老师自用 Tmux 配置
 
-这是一个为 Vim 用户优化的 Tmux 配置，使用 [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm) 管理插件，提供模糊选择器、美观的 Gruvbox 状态栏和智能会话管理。
+这是一个为 Vim 键位习惯优化的 Tmux 配置，使用 [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm) 管理插件，提供模糊选择器、美观的 Gruvbox 状态栏和智能会话管理。
 
 ![界面截图](cover.png)
 
@@ -12,14 +12,16 @@ git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1 && ~/.
 
 推荐搭配小彭老师的 [NeoVim 配置](https://github.com/archibate/vimrc) 一起使用。
 
+<!-- 详情请看小彭老师的介绍视频：[BV](https://bilibili.com/BV) -->
+
 ## 功能特性
 
 - **最小冲突的前缀键** - `C-z` 作为前缀键（可改），最小化与 Vim 和 Bash 的键位冲突
 - **Vim 风格快捷键** - 使用 `C-h`/`C-j`/`C-k`/`C-l` 导航窗格，`M-h`/`M-j`/`M-k`/`M-l` 调整大小
 - **模糊选择器** - 基于 fzf 的会话、窗口和目录浏览器，支持实时预览（前缀键 + f/w）
-- **美观状态栏** - Gruvbox 配色方案，显示 CPU、内存和 API 使用率
+- **美观状态栏** - Gruvbox 配色方案，显示 CPU、内存和 API 使用量
 - **会话持久化** - 通过 tmux-continuum 每 15 分钟自动保存
-- **智能剪贴板** - tmux-yank 无缝集成系统剪贴板
+- **智能剪贴板** - tmux-yank 无缝集成系统剪贴板，与 Vim 剪贴板同步
 - **统计弹窗** - 实时系统指标，柱状图显示内存和 CPU 用量历史记录（前缀键 + i）
 - **问题监控** - 后台检测所有窗格中的新问题（可选）
 
@@ -544,3 +546,4 @@ chmod +x ~/.config/tmux/scripts/*.py
 
 - [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
 - [Gruvbox](https://github.com/morhetz/gruvbox) 配色方案灵感来源
+- [Claude Code](https://claude.com/product/claude-code) 负责润色了本文档
