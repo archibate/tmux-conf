@@ -10,12 +10,22 @@ from pathlib import Path
 
 CACHE_FILE = '/tmp/.glm_usage_cache'
 CACHE_TTL = 60  # seconds
-SETTINGS_FILE = Path.home() / '.claude' / 'settings.json'
+OPENCODE_SETTINGS_FILE = Path.home() / '.config' / 'opencode' / 'opencode.json'
+CLAUDE_SETTINGS_FILE = Path.home() / '.claude' / 'settings.json'
 
 def get_env_from_settings():
-    """Read env values from ~/.claude/settings.json"""
+    """Read env values from opencode.json (1st priority) or ~/.claude/settings.json (fallback)"""
     try:
-        with open(SETTINGS_FILE, 'r') as f:
+        with open(OPENCODE_SETTINGS_FILE, 'r') as f:
+            settings = json.load(f)
+            env = settings.get('env', {})
+            if env:
+                return env
+    except Exception:
+        pass
+
+    try:
+        with open(CLAUDE_SETTINGS_FILE, 'r') as f:
             settings = json.load(f)
             return settings.get('env', {})
     except Exception:

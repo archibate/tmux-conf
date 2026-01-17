@@ -4,6 +4,11 @@ A vim-user-friendly tmux configuration with TPM (Tmux Plugin Manager), featuring
 
 ![Screenshot](screenshot.png)
 
+```bash
+git clone git@github.com:archibate/tmux-conf ~/.config/tmux
+~/.config/tmux/tmux_install.sh
+```
+
 ## Features
 
 - **Vim-style keybindings** - Navigate panes with `h`/`j`/`k`/`l`, resize with `H`/`J`/`K`/`L`
