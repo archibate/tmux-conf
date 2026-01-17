@@ -1,54 +1,117 @@
-# Tmux Config - Vim User Edition
+# Tmux 配置 - Vim 用户版
 
-A vim-user-friendly tmux configuration with TPM (Tmux Plugin Manager), featuring fuzzy pickers, beautiful Gruvbox status bar, and smart session management.
+这是一个为 Vim 用户优化的 Tmux 配置，使用 TPM (Tmux Plugin Manager) 管理插件，提供模糊选择器、美观的 Gruvbox 状态栏和智能会话管理。
 
-![Screenshot](cover.png)
+![截图](cover.png)
 
 ```bash
 git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1
 ~/.config/tmux/tmux_install.sh
 ```
 
-## Features
+推荐搭配小彭老师的 [NeoVim 配置](https://github.com/archibate/vimrc) 一起使用。
 
-- **Vim-style keybindings** - Navigate panes with `C-h`/`C-j`/`C-k`/`C-l`, resize with `M-h`/`M-j`/`M-k`/`M-l`
-- **Fuzzy pickers** - fzf-powered session, window, and catalog browsers with live preview
-- **Beautiful status bar** - Gruvbox color scheme with CPU, memory, and API usage indicators
-- **Session persistence** - Auto-save every 15 minutes with tmux-continuum
-- **Smart clipboard** - tmux-yank for seamless system clipboard integration
-<!-- - **Claude Code aware** - Shows `✻` indicator when Claude is thinking -->
-- **Stats popup** - Real-time system metrics with sparkline history (prefix + i)
-- **Issue monitoring** - Background detection of new issues across panes (optional)
+## 功能特性
 
-## Installation
+- **Vim 风格快捷键** - 使用 `C-h`/`C-j`/`C-k`/`C-l` 导航窗格，`M-h`/`M-j`/`M-k`/`M-l` 调整大小
+- **模糊选择器** - 基于 fzf 的会话、窗口和目录浏览器，支持实时预览
+- **美观状态栏** - Gruvbox 配色方案，显示 CPU、内存和 API 使用率
+- **会话持久化** - 通过 tmux-continuum 每 15 分钟自动保存
+- **智能剪贴板** - tmux-yank 无缝集成系统剪贴板
+- **统计弹窗** - 实时系统指标，带 sparkline 历史记录（前缀键 + i）
+- **问题监控** - 后台检测所有窗格中的新问题（可选）
+
+## 安装
 
 ```bash
-# 1. Install dependencies
+# 1. 安装依赖
 sudo apt install tmux fzf xsel tree python3   # Debian/Ubuntu
 brew install tmux fzf tree python3             # macOS
 
-# 2. Clone this repository
+# 2. 克隆此仓库
 git clone <your-repo-url> ~/.config/tmux
 
-# 3. Run the installer (sets up config + aliases + TPM + plugins)
+# 3. 运行安装脚本（设置配置、别名、TPM 和插件）
 bash ~/.config/tmux/scripts/tmux_install.sh
 
-# 4. Start tmux
+# 4. 启动 tmux
 tmux start-server
 ```
 
-That's it! The installer sets up:
-- `~/.tmux.conf` symlink to the config
-- Shell aliases (`tu`, `tl`, `ta`, `tc`, `ts`, `tb`)
-- TPM (Tmux Plugin Manager) and all plugins
+就这样！安装脚本会自动设置：
+- `~/.tmux.conf` 配置文件的符号链接
+- Shell 别名（`tu`、`tl`、`ta`、`tc`、`ts`、`tb`）
+- TPM（Tmux 插件管理器）和所有插件
 
-## Key Bindings
+## 理解 Tmux 的三大模式
 
-### Prefix
+Tmux 有三种工作模式，如果你熟悉 Vim，这些模式会非常直观：
 
-The prefix key is `Ctrl-z` (instead of the tmux built-in default `Ctrl-b` for better ergonomics).
+| 模式 | Vim 类比 | 说明 |
+|------|----------|------|
+| **TMUX** | 插入模式 | 终端正常工作模式，可以直接向终端输入命令 |
+| **COPY** | 普通模式 | 复制模式，可以自由移动光标浏览历史输出，不受终端限制 |
+| **WAIT** | Ctrl-w 组合键 | 前缀键按下后的等待状态，准备接收 tmux 命令 |
 
-You can customize prefix key in [tmux.conf](tmux.conf):
+### 模式切换方式
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   TMUX 模式 (终端模式)                                       │
+│   ↓ 按 Ctrl-z (前缀键)                                        │
+│   WAIT 模式 (等待命令) ──→ 按 h/j/k/l 等执行窗格操作          │
+│   ↓ 按 Esc                                                  │
+│   COPY 模式 (复制模式) ──→ 按 v 进入 VISUAL 选择              │
+│                          ↓ 按 i/a/q/Esc                      │
+│                          回到 TMUX 模式                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 各模式详解
+
+**TMUX 模式**（终端模式）
+- 这是默认模式，终端像正常 shell 一样工作
+- 可以直接输入命令、运行程序
+- 类似 Vim 的插入模式，你"插入"内容到终端
+
+**COPY 模式**（复制模式）
+- 按 `前缀 + Esc` 进入
+- 可以用 `h/j/k/l` 自由移动光标，浏览历史输出
+- 不再被限制在终端的最后一行
+- 按 `v` 进入 VISUAL 选择模式，用 `h/j/k/l` 选择文本
+- 按 `y` 复制选中内容
+- 按 `i`、`a`、`q` 或 `Esc` 退出，回到 TMUX 模式
+- 类似 Vim 的普通模式，你可以"导航"和"操作"
+
+**WAIT 模式**（等待命令）
+- 按 `Ctrl-z`（前缀键）进入
+- 状态栏右下角会显示绿色的 `WAIT`
+- 此时输入 `h` 会切换到左侧窗格，而不是在终端输入字母 `h`
+- 如果几秒内不输入任何命令，自动回到 TMUX 模式
+- 类似 Vim 中按 `Ctrl-w` 后等待下一个键的状态
+
+### 状态指示器
+
+右下角的 **tmux-mode-indicator** 会实时显示当前模式：
+
+| 显示 | 模式 | 颜色 |
+|------|------|------|
+| `TMUX` | 终端模式 | 青色 |
+| `WAIT` | 等待命令 | 绿色 |
+| `COPY` | 复制模式 | 橙色 |
+| `SYNC` | 同步模式 | 红色 |
+
+这个设计让 Vim 用户感到非常自然：就像在 Vim 中按 `Esc` 回到普通模式导航，按 `i/a` 回到插入模式输入一样。
+
+## 快捷键
+
+### 前缀键
+
+前缀键是 `Ctrl-z`（替代 tmux 内置默认的 `Ctrl-b`，更符合人体工学）。
+
+你可以在 [tmux.conf](tmux.conf) 中自定义前缀键：
 
 ```tmux
 unbind C-b
@@ -56,354 +119,335 @@ set -g prefix C-z
 bind C-z send-prefix
 ```
 
-### Pane Navigation
+### 窗格导航
 
-| Key | Action |
-|-----|--------|
-| `prefix + h` | Move to left pane |
-| `prefix + j` | Move to pane below |
-| `prefix + k` | Move to pane above |
-| `prefix + l` | Move to right pane |
-| `prefix + x` | Kill current pane |
-| `prefix + b` | Break pane to new window |
-| `prefix + m` | Move pane to another window |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + h` | 移动到左侧窗格 |
+| `前缀 + j` | 移动到下方窗格 |
+| `前缀 + k` | 移动到上方窗格 |
+| `前缀 + l` | 移动到右侧窗格 |
+| `前缀 + x` | 关闭当前窗格 |
+| `前缀 + b` | 将窗格分离到新窗口 |
+| `前缀 + m` | 将窗格移动到另一个窗口 |
 
-### Pane Management
+### 窗格管理
 
-| Key | Action |
-|-----|--------|
-| `prefix + H` | Move pane to left |
-| `prefix + J` | Move pane below |
-| `prefix + K` | Move pane above |
-| `prefix + L` | Move pane to right |
-| `prefix + s` | Horizontal split (like vim `:split`) |
-| `prefix + v` | Vertical split (like vim `:vsplit`) |
-| `prefix + r` | Rotate panes |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + H` | 将窗格向左移动 |
+| `前缀 + J` | 将窗格向下移动 |
+| `前缀 + K` | 将窗格向上移动 |
+| `前缀 + L` | 将窗格向右移动 |
+| `前缀 + s` | 水平分割（类似 vim 的 `:split`） |
+| `前缀 + v` | 垂直分割（类似 vim 的 `:vsplit`） |
+| `前缀 + r` | 旋转窗格 |
 
-### Window Management
+### 窗口管理
 
-| Key | Action |
-|-----|--------|
-| `prefix + c` or `t` | Create new window |
-| `prefix + 1-9` | Select window 1-9 |
-| `prefix + n` | Next window |
-| `prefix + p` | Previous window |
-| `prefix + z` | Last window (quick toggle) |
-| `prefix + ,` | Rename window |
-| `prefix + X` | Kill window |
-| `prefix + w` | Window picker (fzf) |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + c` 或 `t` | 创建新窗口 |
+| `前缀 + 1-9` | 选择窗口 1-9 |
+| `前缀 + n` | 下一个窗口 |
+| `前缀 + p` | 上一个窗口 |
+| `前缀 + z` | 上一个窗口（快速切换） |
+| `前缀 + ,` | 重命名窗口 |
+| `前缀 + X` | 关闭窗口 |
+| `前缀 + w` | 窗口选择器 (fzf) |
 
-### Session Management
+### 会话管理
 
-| Key | Action |
-|-----|--------|
-| `prefix + f` | Session picker (fzf) |
-| `prefix + F` | Catalog picker (all sessions/windows) |
-| `prefix + a` | Last session (quick toggle) |
-| `prefix + .` | Rename session |
-| `prefix + d` | Detach session |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + f` | 会话选择器 (fzf) |
+| `前缀 + F` | 目录选择器（所有会话/窗口） |
+| `前缀 + a` | 上一个会话（快速切换） |
+| `前缀 + .` | 重命名会话 |
+| `前缀 + d` | 分离会话 |
 
-### Copy Mode (Vi-style)
+### 复制模式（Vi 风格）
 
-| Key | Action |
-|-----|--------|
-| `prefix + Esc` | Enter copy mode |
-| `v` | Start visual selection |
-| `V` | Select line |
-| `Ctrl-v` | Rectangle toggle |
-| `y` | Copy selection |
-| `Y` | Copy to system clipboard (via xclip) |
-| `p` | Paste from tmux buffer |
-| `i`/`a`/`q`/`Esc` | Exit copy mode |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + Esc` | 进入复制模式 |
+| `v` | 开始视觉选择 |
+| `V` | 选择整行 |
+| `Ctrl-v` | 矩形选择切换 |
+| `y` | 复制选择 |
+| `Y` | 复制到系统剪贴板（通过 xclip） |
+| `p` | 从 tmux 缓冲区粘贴 |
+| `i`/`a`/`q`/`Esc` | 退出复制模式 |
 
-### Plugin Management
+### 插件管理
 
-| Key | Action |
-|-----|--------|
-| `prefix + I` | Install plugins |
-| `prefix + U` | Update plugins |
-| `prefix + R` | Reload `~/.tmux.conf` |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + I` | 安装插件 |
+| `前缀 + U` | 更新插件 |
+| `前缀 + R` | 重新加载 `~/.tmux.conf` |
 
-### Misc
+### 其他
 
-| Key | Action |
-|-----|--------|
-| `prefix + ?` | List all key bindings |
-| `prefix + Ctrl-w` | Save pane to file (`/tmp/tmux-capture-YYYYMMDD-HHMMSS.txt`) |
-| `prefix + P` | Paste buffer |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + ?` | 列出所有快捷键 |
+| `前缀 + Ctrl-w` | 保存窗格到文件 (`/tmp/tmux-capture-YYYYMMDD-HHMMSS.txt`) |
+| `前缀 + P` | 粘贴缓冲区 |
 
-## Plugin Key Bindings
+## 插件快捷键
 
-### tmux-yank (Clipboard)
+### tmux-yank（剪贴板）
 
-| Key | Action |
-|-----|--------|
-| `prefix + y` | Copy command line to clipboard |
-| `prefix + Y` | Copy current directory to clipboard |
-| `y` (in copy mode) | Copy selection to system clipboard |
-| `Y` (in copy mode) | Copy and paste to command line |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + y` | 复制命令行到剪贴板 |
+| `前缀 + Y` | 复制当前目录到剪贴板 |
+| `y`（复制模式中） | 复制选择到系统剪贴板 |
+| `Y`（复制模式中） | 复制并粘贴到命令行 |
 
-**Mouse**: Select text with mouse to copy directly to clipboard.
+**鼠标**：用鼠标选择文本可直接复制到剪贴板（类似 Wendous Terminal）。
 
-### tmux-sidebar (Directory Tree)
+### tmux-sidebar（目录树）
 
-| Key | Action |
-|-----|--------|
-| `prefix + Tab` | Toggle sidebar (tree view) |
-| `prefix + Backspace` | Toggle sidebar and focus it |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + Tab` | 切换侧边栏（树形视图） |
+| `前缀 + Backspace` | 切换侧边栏并聚焦 |
 
-### tmux-copycat (Search)
+### tmux-copycat（搜索）
 
-| Key | Action |
-|-----|--------|
-| `prefix + /` | Regex search |
-| `prefix + Ctrl-f` | Search files |
-| `prefix + Ctrl-g` | Search git hashes (after `git log`) |
-| `prefix + Ctrl-u` | Search URLs |
-| `prefix + Ctrl-d` | Search numbers |
-| `prefix + Alt-h` | Search SHA hashes |
-| `prefix + Alt-i` | Search IP addresses |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + /` | 正则表达式搜索 |
+| `前缀 + Ctrl-f` | 搜索文件 |
+| `前缀 + Ctrl-g` | 搜索 git 哈希值（`git log` 后） |
+| `前缀 + Ctrl-u` | 搜索 URL |
+| `前缀 + Ctrl-d` | 搜索数字 |
+| `前缀 + Alt-h` | 搜索 SHA 哈希值 |
+| `前缀 + Alt-i` | 搜索 IP 地址 |
 
-In copycat mode:
-- `n` - Next match
-- `N` - Previous match
-- `Enter` - Copy match (vi mode)
+在 copycat 模式中：
+- `n` - 下一个匹配
+- `N` - 上一个匹配
+- `Enter` - 复制匹配（vi 模式）
 
-### tmux-open (Open Files/URLs)
+### tmux-open（打开文件/URL）
 
-In copy mode:
-| Key | Action |
-|-----|--------|
-| `o` | Open with system default |
-| `Ctrl-o` | Open with `$EDITOR` |
-| `Shift-s` | Search in web browser |
+> **注意**：以下快捷键需要先进入复制模式（`前缀 + Esc`）
 
-### tmux-which-key (Action Menu)
+复制模式中：
+| 快捷键 | 功能 |
+|--------|------|
+| `o` | 用系统默认程序打开当前光标位置的文件/链接 |
+| `Ctrl-o` | 用 `$EDITOR` 打开 |
+| `Shift-s` | 在网络浏览器中搜索 |
 
-| Key | Action |
-|-----|--------|
-| `prefix + Space` | Show action menu |
-| `Ctrl-Space` | Show action menu (root table) |
+**使用方法**：
+1. 按 `前缀 + Esc` 进入复制模式
+2. 移动光标到文件路径或 URL 上，按 `o` 直接打开
+3. 或先用 `v` 选中文本，再按 `o` 打开选中的内容
 
-### tmux-resurrect (Session Persistence)
+### tmux-which-key（操作菜单）
 
-| Key | Action |
-|-----|--------|
-| `prefix + Ctrl-s` | Save session manually |
-| `prefix + Ctrl-r` | Restore saved session |
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + Space` | 显示操作菜单 |
+| `Ctrl-Space` | 显示操作菜单（根表） |
 
-**Note**: tmux-continuum auto-saves every 15 minutes and auto-restores on tmux start.
+### tmux-resurrect（会话持久化）
 
-## Useful Default Tmux Bindings (Not Overridden)
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + Ctrl-s` | 手动保存会话 |
+| `前缀 + Ctrl-r` | 恢复已保存的会话 |
 
-| Key | Action |
-|-----|--------|
-| `prefix + :` | Command prompt |
-| `prefix + [` | Enter scroll mode (alternative to Esc) |
-| `prefix + ]` | Paste from buffer |
-| `prefix + space` | Next layout |
-| `prefix + z` | Zoom/unzoom pane |
-| `prefix + {` | Swap pane left |
-| `prefix + }` | Swap pane right |
-| `prefix + o` | Rotate panes forward |
-| `prefix + ~` | Show messages |
+**注意**：tmux-continuum 每 15 分钟自动保存，tmux 启动时自动恢复。
 
-## Shell Aliases
+## 常用的 Tmux 默认快捷键（未被覆盖）
 
-After sourcing [`~/.config/tmux/scripts/tmux_aliases.sh`](scripts/tmux_aliases.sh):
+| 快捷键 | 功能 |
+|--------|------|
+| `前缀 + :` | 命令提示符 |
+| `前缀 + [` | 进入滚动模式（Esc 的替代方式） |
+| `前缀 + ]` | 从缓冲区粘贴 |
+| `前缀 + space` | 下一个布局 |
+| `前缀 + z` | 放大/缩小窗格 |
+| `前缀 + {` | 与左侧窗格交换 |
+| `前缀 + }` | 与右侧窗格交换 |
+| `前缀 + o` | 向前旋转窗格 |
+| `前缀 + ~` | 显示消息 |
 
-| Command | Action |
+## Shell 别名
+
+在引入 [`~/.config/tmux/scripts/tmux_aliases.sh`](scripts/tmux_aliases.sh) 后：
+
+| 命令 | 功能 |
 |---------|--------|
-| `tu` | Show fzf session picker |
-| `tu <name>` | Attach to or create session `<name>` |
-| `tu .` | Create/use session named after current directory |
-| `tl` | List sessions (`tmux ls`) |
-| `ta` | Attach to session (`tmux attach`) |
-| `tc` | Show catalog picker (all sessions/windows) |
-| `ts` | Full Claude analysis with attention table |
-| `tb` | Quick attention-only view (🔴🟡🟢) |
+| `tu` | 显示 fzf 会话选择器 |
+| `tu <name>` | 附加到或创建会话 `<name>` |
+| `tu .` | 创建/使用以当前目录命名的会话 |
+| `tl` | 列出会话 (`tmux ls`) |
+| `ta` | 附加到会话 (`tmux attach`) |
+| `tc` | 显示目录选择器（所有会话/窗口） |
+| `ts` | 完整 Claude 分析，带关注表格 |
+| `tb` | 快速关注视图（🔴🟡🟢） |
 
-## Status Bar
+## 状态栏
 
-The status bar shows (left to right):
-- Session name (in blue)
-- Hostname
-- Current path
-- CPU usage (green)
-- Memory usage (green)
-- GLM API usage (purple)
-- Current time
-- Tmux mode indicator
+状态栏显示（从左到右）：
+- 会话名称（蓝色）
+- 主机名
+- 当前路径
+- CPU 使用率（绿色）
+- 内存使用率（绿色）
+- GLM API 使用率（紫色）
+- 当前时间
+- Tmux 模式指示器
 
-### Claude Code Status Indicator
+### Claude Code 状态指示器
 
-When using Claude Code, a `✻` appears in the window list when Claude is thinking. This is handled by the `claude_status.sh` background monitor.
+使用 Claude Code 时，当 Claude 正在思考时，窗口列表中会显示 `✻`。这由 `claude_status.sh` 后台监控器处理。
 
-### Stats Popup (`prefix + i`)
+### 统计弹窗（`前缀 + i`）
 
-Shows real-time system metrics with 20-point sparkline history:
+显示实时系统指标，带 20 点 sparkline 历史记录：
 
-| Metric | Description |
-|--------|-------------|
-| **LOAD** | 1/5/15-minute load averages (scaled by CPU cores) |
-| **CPU** | Current usage percentage with average |
-| **MEM** | Memory usage percentage with average |
-| **GLM** | Claude API token usage (fixed 0-100 scale) |
+| 指标 | 描述 |
+|--------|------|
+| **LOAD** | 1/5/15 分钟负载平均值（按 CPU 核心数缩放） |
+| **CPU** | 当前使用率百分比及平均值 |
+| **MEM** | 内存使用率百分比及平均值 |
+| **GLM** | Claude API 令牌使用率（固定 0-100 刻度） |
 
-Color-coded with Gruvbox: 🔴 high > 🟡 medium > 🟢 low.
+使用 Gruvbox 配色：🔴 高 > 🟡 中 > 🟢 低。
 
-### Sparkline Cache System
+### Sparkline 缓存系统
 
-Status bar scripts use caching to ensure 1-second refresh rate doesn't impact performance:
+状态栏脚本使用缓存确保 1 秒刷新率不影响性能：
 
-| Cache File | Metric | Update Interval | Data Points |
-|------------|--------|-----------------|-------------|
-| `/tmp/tmux_sparkline_cache` | CPU/MEM/GLM | 5 seconds | 20 points |
-| `/tmp/tmux_load_sparkline_cache` | LOAD | 5 seconds | 20 points |
-| `/tmp/.glm_usage_cache` | GLM API usage | 60 seconds | 1 point |
+| 缓存文件 | 指标 | 更新间隔 | 数据点 |
+|----------|------|----------|--------|
+| `/tmp/tmux_sparkline_cache` | CPU/MEM/GLM | 5 秒 | 20 点 |
+| `/tmp/tmux_load_sparkline_cache` | LOAD | 5 秒 | 20 点 |
+| `/tmp/.glm_usage_cache` | GLM API 使用率 | 60 秒 | 1 点 |
 
-The cache ensures smooth status bar updates while keeping resource usage low.
+缓存确保状态栏更新流畅，同时保持低资源占用。
 
-### Claude Analysis Commands
+### Claude 分析命令
 
-| Command | Action |
-|---------|--------|
-| `ts` | Full analysis with attention table and pane content |
-| `tb` | Quick attention-only view with emoji priorities (🔴🟡🟢) |
+| 命令 | 功能 |
+|---------|------|
+| `ts` | 完整分析，带关注表格和窗格内容 |
+| `tb` | 快速关注视图，带 emoji 优先级（🔴🟡🟢） |
 
-Both commands operate in read-only mode and only invoke tmux commands (no file edits).
+两个命令都运行在只读模式，只调用 tmux 命令（不编辑文件）。
 
-<!-- ### Issue Monitoring System (Optional) -->
-<!--  -->
-<!-- **Note:** This feature is currently disabled in `tmux.conf`. To enable, uncomment the `run-shell -b` line. -->
-<!--  -->
-<!-- Automatically monitors all tmux panes for issues and notifies when new problems appear: -->
-<!--  -->
-<!-- **Keybinding:** -->
-<!-- - `prefix + B` - Show brief popup with all current issues -->
-<!--  -->
-<!-- **Status bar indicators:** -->
-<!-- - `·` (gray dot) - No new issues -->
-<!-- - `⚠1` (red) - New 🔴 high-priority issues -->
-<!-- - `⚠1` (yellow) - New 🟡 medium-priority issues -->
-<!--  -->
-<!-- **Manual control:** -->
-<!-- ```bash -->
-<!-- # Check monitor status -->
-<!-- ~/.config/tmux/scripts/tmux_brief_monitor.sh --status -->
-<!--  -->
-<!-- # Stop monitor -->
-<!-- ~/.config/tmux/scripts/tmux_brief_monitor.sh --stop -->
-<!--  -->
-<!-- # Run single check -->
-<!-- ~/.config/tmux/scripts/tmux_brief_monitor.sh --once -->
-<!-- ``` -->
+## 配置
 
-## Configuration
+### TPM（插件管理器）
 
-### TPM (Plugin Manager)
-
-**Note**: TPM and all plugins are installed automatically by the installer script. Use these commands to manually manage plugins.
+**注意**：TPM 和所有插件由安装脚本自动安装。使用以下命令手动管理插件。
 
 ```bash
-# Install plugins (if not already installed)
-~/.tmux/plugins/tpm/bin/install_plugins # equivalent to: prefix + I
+# 安装插件（如果尚未安装）
+~/.tmux/plugins/tpm/bin/install_plugins # 等同于：前缀 + I
 
-# Update plugins
-~/.tmux/plugins/tpm/bin/update_plugins # equivalent to: prefix + U
+# 更新插件
+~/.tmux/plugins/tpm/bin/update_plugins # 等同于：前缀 + U
 
-# Clean unused plugins
+# 清理未使用的插件
 ~/.tmux/plugins/tpm/bin/clean_plugins
 ```
 
-### Reload Config
+### 重新加载配置
 
 ```bash
-# Inside tmux
+# 在 tmux 内
 tmux source-file ~/.tmux.conf
 
-# Or from shell
+# 或从 shell
 tmux reload
 ```
 
-### Customization
+### 自定义
 
-Edit `tmux.conf` to customize:
+编辑 `tmux.conf` 进行自定义：
 
 ```tmux
-# Change prefix key to Ctrl-z
+# 将前缀键改为 Ctrl-z
 unbind C-b
 set -g prefix C-z
 
-# Add more plugins
+# 添加更多插件
 set -g @plugin 'githubusername/reponame'
 
-# Change colors
+# 更改颜色
 set -g status-bg '#1d2021'
 set -g status-fg '#ebdbb2'
 ```
 
-## Color Scheme
+## 配色方案
 
-Uses [Gruvbox](https://github.com/morhetz/gruvbox) colors:
+使用 [Gruvbox](https://github.com/morhetz/gruvbox) 配色：
 
-| Usage | Color |
-|-------|-------|
-| Background | `#1d2021` (bg0) |
-| Background (lighter) | `#32302f` (bg1) |
-| Foreground | `#ebdbb2` (fg) |
-| Green | `#b8bb26` |
-| Blue | `#83a598` |
-| Yellow | `#d79921` |
-| Orange | `#fe8019` |
-| Purple | `#d3869b` |
-| Gray | `#928374` |
+| 用途 | 颜色 |
+|------|------|
+| 背景 | `#1d2021` (bg0) |
+| 背景（较浅） | `#32302f` (bg1) |
+| 前景 | `#ebdbb2` (fg) |
+| 绿色 | `#b8bb26` |
+| 蓝色 | `#83a598` |
+| 黄色 | `#d79921` |
+| 橙色 | `#fe8019` |
+| 紫色 | `#d3869b` |
+| 灰色 | `#928374` |
 
-## Plugins Used
+## 使用的插件
 
-- [tpm](https://github.com/tmux-plugins/tpm) - Tmux Plugin Manager
-- [tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) - Sensible defaults
-- [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) - Save/restore sessions
-- [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) - Auto-save sessions
-- [tmux-yank](https://github.com/tmux-plugins/tmux-yank) - Clipboard integration
-- [tmux-open](https://github.com/tmux-plugins/tmux-open) - Open files/URLs
-- [tmux-copycat](https://github.com/tmux-plugins/tmux-copycat) - Regex search
-- [tmux-sidebar](https://github.com/tmux-plugins/tmux-sidebar) - Directory tree
-- [tmux-which-key](https://github.com/alexwforsythe/tmux-which-key) - Action menu
-- [tmux-mode-indicator](https://github.com/MunifTanjim/tmux-mode-indicator) - Mode indicator
+- [tpm](https://github.com/tmux-plugins/tpm) - Tmux 插件管理器
+- [tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) - 合理的默认设置
+- [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) - 保存/恢复会话
+- [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) - 自动保存会话
+- [tmux-yank](https://github.com/tmux-plugins/tmux-yank) - 剪贴板集成
+- [tmux-open](https://github.com/tmux-plugins/tmux-open) - 打开文件/URL
+- [tmux-copycat](https://github.com/tmux-plugins/tmux-copycat) - 正则搜索
+- [tmux-sidebar](https://github.com/tmux-plugins/tmux-sidebar) - 目录树
+- [tmux-which-key](https://github.com/alexwforsythe/tmux-which-key) - 操作菜单
+- [tmux-mode-indicator](https://github.com/MunifTanjim/tmux-mode-indicator) - 模式指示器
 
-## Troubleshooting
+## 故障排除
 
-### Plugins not loading
+### 插件未加载
 
 ```bash
-# Re-run the installer (handles TPM + plugins)
+# 重新运行安装脚本（处理 TPM + 插件）
 bash ~/.config/tmux/scripts/tmux_install.sh
 
-# Or install TPM manually
+# 或手动安装 TPM
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
-# Then install plugins
+# 然后安装插件
 ~/.tmux/plugins/tpm/bin/install_plugins
 ```
 
-### Mouse selection not copying to clipboard
+### 鼠标选择未复制到剪贴板
 
-Install clipboard tool:
+安装剪贴板工具：
 ```bash
 sudo apt install xsel  # Linux
 brew install reattach-to-user-namespace  # macOS
 ```
 
-### Status bar scripts not working
+### 状态栏脚本不工作
 
-Ensure scripts are executable:
+确保脚本有执行权限：
 ```bash
 chmod +x ~/.config/tmux/scripts/*.sh
 chmod +x ~/.config/tmux/scripts/*.py
 ```
 
-## Credits
+## 致谢
 
 - [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
-- [Gruvbox](https://github.com/morhetz/gruvbox) for color scheme inspiration
+- [Gruvbox](https://github.com/morhetz/gruvbox) 配色方案灵感来源
