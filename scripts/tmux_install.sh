@@ -19,7 +19,7 @@ esac
 echo "📦 Tmux Config Installer"
 echo ""
 
-ALIAS_LINE='[ -f ~/.config/tmux/tmux_aliases.sh ] && source ~/.config/tmux/tmux_aliases.sh'
+ALIAS_LINE='[ ! -f ~/.config/tmux/tmux_aliases.sh ] || source ~/.config/tmux/tmux_aliases.sh'
 if ! grep -qF "$ALIAS_LINE" "$SHELL_RC" 2>/dev/null; then
     echo "" >> "$SHELL_RC"
     echo "# Tmux aliases" >> "$SHELL_RC"
@@ -50,6 +50,10 @@ if [ ! -d "$TPM_DIR" ]; then
     mkdir -p "$HOME/.tmux/plugins"
     git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
     echo "✓ TPM installed to $TPM_DIR"
+    tmux kill-server
+    tmux start-server
+    tmux kill-server
+    echo "✓ Tmux server restarted"
 else
     echo "✓ TPM already installed at $TPM_DIR"
 fi

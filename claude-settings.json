@@ -1,6 +1,0 @@
-{
-  "permissions": {
-    "allow": ["Bash(tmux *)"],
-    "deny": ["Edit", "Write", "WebFetch", "WebSearch", "Skill"]
-  }
-}
