@@ -68,6 +68,13 @@ else
     echo "Run manually inside tmux: press prefix + I or run: $TPM_DIR/bin/install_plugins"
 fi
 
+echo "📦 Reloading Tmux Configuration"
+tmux kill-server
+tmux start-server
+tmux source-file ~/.tmux.conf
+sleep 1
+tmux kill-server
+
 echo ""
 echo "✅ Installation complete!"
 echo ""
