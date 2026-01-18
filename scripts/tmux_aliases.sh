@@ -34,6 +34,7 @@ tu() {
 
 alias tl='tmux ls'
 alias ta='tmux attach'
+alias tv='tmux capture-pane -pS - | less'
 
 # Tmux catalog - interactive window/session picker with preview
 tc() {

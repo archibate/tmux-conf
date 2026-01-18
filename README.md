@@ -25,6 +25,12 @@ git clone https://github.com/archibate/tmux-conf ~/.config/tmux --depth=1 && ~/.
 - **统计弹窗** - 实时系统指标，柱状图显示内存和 CPU 用量历史记录（前缀键 + i）
 - **问题监控** - 后台检测所有窗格中的新问题（可选）
 
+## 更新日志
+
+### 2026-01-18
+- **终端配置更新**：将默认终端类型从 `screen-256color` 改为 `xterm-kitty`，优化 Kitty 终端支持
+- **新增 `tv` 别名**：添加快速查看当前窗格历史输出的命令（使用 `less` 分页器）
+
 ## 安装
 
 ```bash
@@ -390,6 +396,7 @@ bind C-z send-prefix
 | `tl` | 列出会话 (`tmux ls`) |
 | `ta` | 附加到会话 (`tmux attach`) |
 | `tc` | 显示目录选择器（所有会话/窗口） |
+| `tv` | 查看当前窗格历史输出（`less` 分页器） |
 | `ts` | 完整 Claude 分析，带关注表格 |
 | `tb` | 快速关注视图（🔴🟡🟢） |
 
