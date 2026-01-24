@@ -36,10 +36,6 @@ alias tl='tmux ls'
 alias ta='tmux attach'
 alias tv='tmux capture-pane -pS - | less'
 
-# Tmux catalog - interactive window/session picker with preview
-tc() {
-    ~/.config/tmux/scripts/tmux_catalog.sh
-}
 
 # Summarize all tmux windows using Claude
 alias ts='~/.config/tmux/scripts/tmux_summarize.sh'

@@ -47,7 +47,7 @@ tmux new -s example_session
 
 就这样！安装脚本会自动设置：
 - `~/.tmux.conf` 配置文件的符号链接
-- Shell 别名（`tu`、`tl`、`ta`、`tc`、`ts`、`tb`）
+- Shell 别名（`tu`、`tl`、`ta`、`ts`、`tb`）
 - TPM（Tmux 插件管理器）和所有插件
 
 ## 为什么选择 Tmux
@@ -390,7 +390,6 @@ bind C-z send-prefix
 | `tu .` | 创建/使用以当前目录命名的会话 |
 | `tl` | 列出会话 (`tmux ls`) |
 | `ta` | 附加到会话 (`tmux attach`) |
-| `tc` | 显示目录选择器（所有会话/窗口） |
 | `tv` | 查看当前窗格历史输出（`less` 分页器） |
 | `ts` | 完整 Claude 分析，带关注表格 |
 | `tb` | 快速关注视图（🔴🟡🟢） |
