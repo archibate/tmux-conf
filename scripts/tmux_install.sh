@@ -19,7 +19,7 @@ esac
 echo "📦 Tmux Config Installer"
 echo ""
 
-ALIAS_LINE='[ ! -f ~/.config/tmux/tmux_aliases.sh ] || source ~/.config/tmux/tmux_aliases.sh'
+ALIAS_LINE='[ ! -f ~/.config/tmux/scripts/tmux_aliases.sh ] || source ~/.config/tmux/scripts/tmux_aliases.sh'
 if ! grep -qF "$ALIAS_LINE" "$SHELL_RC" 2>/dev/null; then
     echo "" >> "$SHELL_RC"
     echo "# Tmux aliases" >> "$SHELL_RC"
