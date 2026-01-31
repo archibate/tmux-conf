@@ -184,25 +184,25 @@ set -g status on                    # Enable status bar
 set -g status-justify centre        # Center window list
 set -g status-left-length 40
 set -g status-right-length 80
-set -g status-left "#[bg=#7aa2f7,fg=#1a1b26,bold] #S "
-# set -g status-right "#(~/.config/tmux/scripts/sparkline_stats.sh 1) #(~/.config/tmux/scripts/tmux_brief_indicator.sh) #[bg=#32344a,fg=#acb0d0] %H:%M #[bg=#1a1b26]#{tmux_mode_indicator}"
-set -g status-right "#(~/.config/tmux/scripts/sparkline_stats.sh 1) #[bg=#32344a,fg=#acb0d0] %H:%M #[bg=#1a1b26]#{tmux_mode_indicator}"
+set -g status-left "#[bg=#83a598,fg=#1d2021,bold] #S "
+# set -g status-right "#(~/.config/tmux/scripts/sparkline_stats.sh 1) #(~/.config/tmux/scripts/tmux_brief_indicator.sh) #[bg=#32302f,fg=#a89984] %H:%M #[bg=#1d2021]#{tmux_mode_indicator}"
+set -g status-right "#(~/.config/tmux/scripts/sparkline_stats.sh 1) #[bg=#32302f,fg=#a89984] %H:%M #[bg=#1d2021]#{tmux_mode_indicator}"
 
 setw -g pane-border-status top
-setw -g pane-border-format '#{?#{==:thinking,#{@claude-status}},#[fg=#ff9e64],}#{pane_index} #{pane_current_command}#{?#{==:thinking,#{@claude-status}}, ✻,} #{b:pane_current_path}'
-set -g pane-border-style 'fg=#787c99'
-set -g pane-active-border-style 'fg=#7aa2f7'
-set -g status-style 'bg=#1a1b26,fg=#a9b1d6'
-set -g message-style 'bg=#e0af68,fg=#1a1b26'
-set -g message-command-style 'bg=#7aa2f7,fg=#1a1b26'
-set -g mode-style 'bg=#ff9e64,fg=#1a1b26'
+setw -g pane-border-format '#{?#{==:thinking,#{@claude-status}},#[fg=#fe8019],}#{pane_index} #{pane_current_command}#{?#{==:thinking,#{@claude-status}}, ✻,} #{b:pane_current_path}'
+set -g pane-border-style 'fg=#3c3836'
+set -g pane-active-border-style 'fg=#83a598'
+set -g status-style 'bg=#1d2021,fg=#ebdbb2'
+set -g message-style 'bg=#d79921,fg=#1d2021'
+set -g message-command-style 'bg=#83a598,fg=#1d2021'
+set -g mode-style 'bg=#fe8019,fg=#1d2021'
 
 setw -g window-status-separator ' '
 # Window number shows orange when Claude is thinking, otherwise normal gray
-setw -g window-status-format '#[bg=#1a1b26,fg=#787c99]#{window_index} #[fg=#787c99]#W'
-setw -g window-status-current-format '#[bg=#444b6a,fg=#acb0d0,bold]#{window_index} #[fg=#7aa2f7]#W'
-setw -g window-status-activity-style 'fg=#ff9e64,bg=#1a1b26'
-setw -g window-status-bell-style 'fg=#ad8ee6,bg=#1a1b26'
+setw -g window-status-format '#[bg=#1d2021,fg=#504945]#{window_index} #[fg=#928374]#W'
+setw -g window-status-current-format '#[bg=#3c3836,fg=#928374,bold]#{window_index} #[fg=#83a598]#W'
+setw -g window-status-activity-style 'fg=#fe8019,bg=#1d2021'
+setw -g window-status-bell-style 'fg=#d3869b,bg=#1d2021'
 
 # --- Claude Code Status Indicator ---
 # Shows ✻ in window list when Claude is thinking (uses window option, doesn't rename windows)
@@ -263,10 +263,10 @@ set -g @mode_indicator_prefix_prompt ' WAIT '
 set -g @mode_indicator_copy_prompt ' COPY '
 set -g @mode_indicator_sync_prompt ' SYNC '
 set -g @mode_indicator_empty_prompt ' TMUX '
-set -g @mode_indicator_prefix_mode_style 'bg=#9ece6a,fg=#1a1b26'
-set -g @mode_indicator_copy_mode_style 'bg=#ff9e64,fg=#1a1b26'
-set -g @mode_indicator_sync_mode_style 'bg=#f7768e,fg=#1a1b26'
-set -g @mode_indicator_empty_mode_style 'bg=#0db9d7,fg=#1a1b26'
+set -g @mode_indicator_prefix_mode_style 'bg=green,fg=black'
+set -g @mode_indicator_copy_mode_style 'bg=orange,fg=black'
+set -g @mode_indicator_sync_mode_style 'bg=red,fg=black'
+set -g @mode_indicator_empty_mode_style 'bg=cyan,fg=black'
 
 # Initialize TPM (keep this at the bottom)
 run '~/.tmux/plugins/tpm/tpm'
